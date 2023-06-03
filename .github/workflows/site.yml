@@ -3,7 +3,7 @@ name: Generate site and deploy content to Pages
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/10 * * * *"
   # Runs on pushes targeting the default branch
   push:
     branches: ["master"]
@@ -26,6 +26,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: github-pages
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -33,6 +34,11 @@ jobs:
         id: pages
         uses: actions/configure-pages@v3
       - name: Build
+        env:
+          CAL_URI: ${{ vars.CAL_URI }}
+          SITE_OWNER_EMAIL: ${{ vars.SITE_OWNER_EMAIL }}
+          ALLOW_UNACCEPTED: ${{ vars.ALLOW_UNACCEPTED }}
+          ALWAYS_ALLOW_SENDERS: ${{ vars.ALWAYS_ALLOW_SENDERS }}
         run: |
           # Build your site here
           pip3 install -r requirements.txt
