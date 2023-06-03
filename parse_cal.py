@@ -32,6 +32,15 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
 
         event_dict = {}
 
+        # get UID from event if set
+        try:
+            event_dict['uid'] = event.get('UID')
+
+            event_dict['uid'] = re.sub(r'@.*', '', event_dict['uid'])
+
+        except:
+            raise Exception('No UID found in event! Ics file invalid?')
+
         try:
             # check for EXDATE rules in recurring events
             if 'EXDATE' in event.keys():
@@ -85,7 +94,7 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
                             continue
                     else:
 
-                        warnings.warn('Could not get parstat for event with UID {}, skipping.'.format(event.get('UID')))
+                        warnings.warn(f'Could not get parstat for event with UID {event.get("uid")}, skipping.')
                         continue
 
 
@@ -123,14 +132,7 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
         except:
             raise Exception('No end time found in event! Ics file invalid?')
 
-        # get UID from event if set
-        try:
-            event_dict['uid'] = event.get('UID')
 
-            event_dict['uid'] = re.sub(r'@.*', '', event_dict['uid'])
-
-        except:
-            raise Exception('No UID found in event! Ics file invalid?')
 
         # get url from event if set
         try:
