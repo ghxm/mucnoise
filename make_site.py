@@ -5,6 +5,7 @@ import json
 from datetime import datetime
 import pytz
 import shutil
+import warnings
 
 site_title = 'mucnoise.org'
 
@@ -59,7 +60,20 @@ static_folder = utils.path_to_site_folder('static')
 for f in data:
     shutil.copyfile(utils.path_to_data_folder(f), os.path.join(static_folder, f))
 
+try:
+    site_owner_email = os.environ.get('SITE_OWNER_EMAIL')
+except:
+    site_owner_email = None
+    warnings.warn('No site owner email found in environment variables.')
+
 # Write the rendered template to a file
 with open('site/index.html', 'w') as f:
-    f.write(template.render(site_title=site_title,schedule=schedule, date_weekdays=date_weekdays, today = utils.get_today(), today_datetime = utils.get_today(dt=True), now = datetime.now(pytz.timezone('Europe/Berlin')), path_exists = lambda x: os.path.exists(x)))
+    f.write(template.render(site_title=site_title,
+                            schedule=schedule,
+                            date_weekdays=date_weekdays,
+                            today = utils.get_today(),
+                            today_datetime = utils.get_today(dt=True),
+                            now = datetime.now(pytz.timezone('Europe/Berlin')),
+                            path_exists = lambda x: os.path.exists(x),
+                            site_owner_email = site_owner_email))
 

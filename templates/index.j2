@@ -17,6 +17,7 @@
 
     <div id="row-top" class="row my-2 d-none d-md-block">
         <div class='d-flex justify-content-end'>
+        <a href="#info" class="btn me-2 btn-outline-primary btn-sm">info</a>
         {%  if path_exists('site/static/events.ics') %}
                 <a href="static/events.ics" class="btn me-2 btn-outline-primary btn-sm">.ics</a>
         {% endif %}
@@ -104,6 +105,48 @@
             {% endfor %}
             </div>
         {% endfor %}
+
+
+
+
+<div id="info" class="row">
+
+
+    <div id = "" class="col-12 col-lg-2 col-xl-3 me-3 me-xl-1">
+
+        <p class="h5">Info</p>
+
+
+    </div>
+
+    <div id = "about" class="col-lg">
+
+            <p class="h3">About</p>
+
+            <p>
+                This is an overview of events subject to personal taste inspired by <a href="https://www.nyc-noise.com">nyc-noise.com</a>.
+            </p>
+    </div>
+
+    <div id = "howto" class="col-lg">
+
+        <p class="h3">How to suggest an event</p>
+
+        <p>
+            Create a calendar event for the show in your local calendar application and invite <a href="mailto:{{ site_owner_email }}">{{ site_owner_email }}</a>. Please note that the event will be publicly visible once it is accepted.
+        </p>
+
+        <p>
+            You can specify additional information using the following keywords in the event description:
+            <code>
+                url: url-to-event-website
+            </code>
+        </p>
+
+    </div>
+
+
+</div>
 
 <div id="log" class="text-end">
     <a href="#top" class="btn btn-outline-primary btn-sm mb-3">^</a>

@@ -253,7 +253,7 @@ allow_unaccepted = os.getenv("ALLOW_UNACCEPTED", 'False').lower() in ('true', '1
 always_allow_senders = json.loads(os.environ.get('ALWAYS_ALLOW_SENDERS', '[]'))
 
 # parse cal
-events = parse_cal(cal, outpaths, allow_unaccepted, always_allow_senders)
+events = parse_cal(cal, outpaths, allow_unaccepted, always_allow_senders, site_owner_email)
 
 # write events to outpaths
 for outp in outpaths:
