@@ -1,0 +1,103 @@
+/* font */
+
+@font-face {
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Open Sans Regular'), local('OpenSans-Regular'), url(https://fonts.gstatic.com/s/opensans/v13/cJZKeOuBrn4kERxqtaUH3ZBw1xU1rKptJj_0jans920.woff2) format('woff2');
+}
+
+html {
+  font-size: 14px;
+}
+
+body {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.99em !important;
+    line-height: 1.5em;
+    color: #333;
+    background-color: #fff;
+}
+
+/* Styles */
+
+body { overflow-x: hidden; }
+
+.container-fluid{
+  padding-left: 0rem;
+  padding-right: 0rem;
+  overflow: hidden;
+}
+
+.dot {
+  height: 5px;
+  width: 5px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.green {
+  background-color: #4CAF50 !important;
+}
+
+.red {
+  background-color: #f44336 !important;
+}
+
+
+/* Tables */
+
+
+
+.row-date {
+    margin-top: 2em;
+    font-weight: bold;
+}
+
+.row-theater {
+    margin-top: 1em;
+    font-style: italic;
+}
+
+.row-title {
+    text-align: left;
+}
+
+/*
+.row-event::before, .row-title::before {
+  content: "";
+  margin-left: 1em;
+}
+*/
+
+.spacer-3 {
+    height: 3em;
+}
+
+.spacer-2 {
+    height: 2em;
+}
+
+.spacer-1 {
+    height: 1em;
+}
+
+.table-events {
+    width: 100% !important;
+    border-collapse: collapse;
+
+}
+
+.table-fixed {
+    table-layout: fixed;
+}
+
+
+td.text span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
