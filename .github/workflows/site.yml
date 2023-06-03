@@ -36,6 +36,7 @@ jobs:
         run: |
           # Build your site here
           pip3 install -r requirements.txt
+          python3 parse_cal.py
           python3 make_site.py
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
