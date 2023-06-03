@@ -33,8 +33,11 @@ jobs:
         id: pages
         uses: actions/configure-pages@v3
       - name: Build
-        with:
-          repo-token: ${{ secrets.CAL_URI }}
+        env:
+          CAL_URI: ${{ secrets.CAL_URI }}
+          SITE_OWNER_EMAIL: ${{ secrets.SITE_OWNER_EMAIL }}
+          ALLOW_UNACCEPTED: ${{ secrets.ALLOW_UNACCEPTED }}
+          ALWAYS_ALLOW_SENDERS: ${{ secrets.ALLOW_UNACCEPTED }}
         run: |
           # Build your site here
           pip3 install -r requirements.txt
