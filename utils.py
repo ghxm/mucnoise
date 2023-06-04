@@ -94,15 +94,14 @@ def split_yaml_text(text):
             return yaml, text
 
     # hard (without ---)
-    yaml_match = re.search(r'^[a-z0-9]+:\s.*\n*(?:[ \t]+.*(?:\n|$))*', text, flags=re.MULTILINE)
+    yaml_match = re.findall(r'^[a-z0-9]+:\s.*\n*(?:[ \t]+.*(?:\n|$))*', text, flags=re.MULTILINE)
 
-    if yaml_match:
-        yaml = yaml_match.group(0)
-        text = text.replace(yaml, '')
+    yaml = ''
+    for m in yaml_match:
+        yaml += m + '\n' if not m.endswith('\n') else m
+        text = text.replace(m, '')
 
-        return yaml, text
-    else:
-        return None, text
+    return yaml, text
 
 def clean_description(text):
 

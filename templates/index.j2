@@ -76,7 +76,7 @@
                                                             <td class="">{% if event.url != None %}<a class="text-decoration-none fw-bold" target="_blank" href="{{ event.url }}">{{ event.title }}</a>{% else %}<span class="fw-bold">{{ event.title }}</span>{% endif %}
                                                             <div class = "row-event-info fst-italic">
                                                             {% if event.description %}
-                                                                {{ event.description }}
+                                                                {{ truncate(event.description, 50) }}
                                                             {% endif %}
                                                             </div>
                                                             </td>
