@@ -80,8 +80,27 @@
                                                             {% endif %}
                                                             </div>
                                                             </td>
-                                                            <td>{%  if event.start_datetime != None %}{{ event.start_datetime.strftime('%H:%M') }} {% endif %}</td>
-                                                            <td>{%  if event.end_datetime != None %}{{ event.end_datetime.strftime('%H:%M') }} {% endif %}{%  if event.multi_day and event.weekday_end != None %}({{ event.weekday_end[:3] }}){% endif %}</td>
+                                                            <td>
+                                                            {%  if event.all_day %}
+                                                                {{ event.weekday_start[:3] }}
+                                                            {%  else %}
+                                                                {%  if event.start_datetime != None %}
+                                                                    {{ event.start_datetime.strftime('%H:%M') }}
+                                                                {% endif %}
+                                                            {% endif %}
+                                                            </td>
+                                                            <td>
+                                                            {%  if event.all_day %}
+                                                                {{ event.weekday_end[:3] }}
+                                                            {%  else %}
+                                                                {%  if event.end_datetime != None %}
+                                                                    {{ event.end_datetime.strftime('%H:%M') }}
+                                                                {% endif %}
+                                                                {%  if event.multi_day and event.weekday_end != None %}
+                                                                    ({{ event.weekday_end[:3] }})
+                                                                {% endif %}
+                                                            {% endif %}
+                                                            </td>
                                                             <td class="text text-break"><span>{% if event.location != None %}{{ event.location }}{% endif %}</span></td>
 
 

@@ -208,7 +208,10 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
             event_dict['weekday_start'] = None
 
         try:
-            event_dict['weekday_end'] = utils.get_weekday(event_dict['end'])
+            if event_dict['all_day']:
+                event_dict['weekday_end'] = utils.get_weekday(event_dict['end'] - timedelta(days=1))
+            else:
+                event_dict['weekday_end'] = utils.get_weekday(event_dict['end'])
         except:
             event_dict['weekday_end'] = None
 
