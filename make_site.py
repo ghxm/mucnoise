@@ -1,3 +1,5 @@
+import re
+
 import jinja2
 import utils
 import os
@@ -6,6 +8,7 @@ from datetime import datetime
 import pytz
 import shutil
 import warnings
+import yaml
 
 site_title = 'mucnoise.com'
 url_theater = 'https://ghxm.github.io/theatermuc'
@@ -54,7 +57,7 @@ date_weekdays = {date: utils.get_weekday(utils.make_date(date, tz='Europe/Berlin
 
 
 # copy files from data to site/static/
-data = os.listdir(utils.path_to_data_folder())
+data = [f for f in os.listdir(utils.path_to_data_folder()) if not  os.path.isdir(os.path.join(utils.path_to_data_folder(), f)) and not f.startswith('.') or f.startswith('_')]
 
 static_folder = utils.path_to_site_folder('static')
 
@@ -67,6 +70,39 @@ except:
     site_owner_email = None
     warnings.warn('No site owner email found in environment variables.')
 
+
+# VENUES
+
+# read in venues
+venues_path = utils.path_to_data_folder('venues/')
+
+venues_paths = [os.path.join(venues_path, f) for f in os.listdir(venues_path) if f.endswith('.yml') and not f.startswith('_')]
+
+venues = []
+
+for venue_path in venues_paths:
+
+    # read in file
+    venue_str = open(venue_path, 'r').read()
+
+    try:
+        # parse yaml
+        venue = yaml.safe_load(venue_str)
+
+        venue['id'] = venue_path.split('/')[-1].replace('.yml','')
+
+        # add to list
+        venues.append(venue)
+    except:
+        warnings.warn('Could not parse venue file: ' + venue_path)
+
+
+# sort by id
+venues = sorted(venues, key=lambda x: x['id'])
+
+
+# MAKE SITE
+
 # Write the rendered template to a file
 with open('site/index.html', 'w') as f:
     f.write(template.render(site_title=site_title,
@@ -77,8 +113,10 @@ with open('site/index.html', 'w') as f:
                             now = datetime.now(pytz.timezone('Europe/Berlin')),
                             path_exists = lambda x: os.path.exists(x),
                             truncate = lambda x, n: x[:n] + '...' if len(x) > n else x,
+                            value_display = lambda x: x if x is not None else '',
                             site_owner_email = site_owner_email,
-                            url_theater=url_theater
+                            url_theater=url_theater,
+                            venues=venues
                             )
                             )
 

@@ -18,14 +18,15 @@
     {% include 'header.j2' %}
 
 
-    <div id="row-top" class="row my-2 d-none d-md-block">
+    <div id="row-top" class="row my-2">
         <div class='d-flex justify-content-end'>
+        <a href="#venues" class="btn me-2 btn-outline-primary btn-sm">venues</a>
         <a href="#info" class="btn me-2 btn-outline-primary btn-sm">info</a>
         {%  if path_exists('site/static/events.ics') %}
-                <a href="static/events.ics" class="btn me-2 btn-outline-primary btn-sm">.ics</a>
+                <a  href="static/events.ics" class="btn me-2 btn-outline-primary btn-sm d-none d-md-block">.ics</a>
         {% endif %}
         {%  if path_exists('site/static/events.json') %}
-                <a href="static/events.json" class="btn me-2 btn-outline-primary btn-sm">.json</a>
+                <a href="static/events.json" class="btn me-2 btn-outline-primary btn-sm d-none d-md-block">.json</a>
         {% endif %}
         </div>
     </div>
@@ -51,10 +52,10 @@
                             <div class="row" id="date-{{  day }}">
 
                                 <div class="col-12 col-lg-2" >
-                                    <p class="h5 text-nowrap">{% if day==today %}Today{% else %}{{ date_weekdays[day] }}{% endif %}, {{ day }}</p>
+                                    <p class="h5 text-nowrap">{% if day==today %}Today{% else %}{{ date_weekdays[day][:3] }}{% endif %}, {{ day }}</p>
                                 </div>
 
-                                <div class="ps-0 ps-lg-4 col-12 col-lg-10" id="events-{day}">
+                                <div class="ps-0 ps-lg-4 col-12 col-lg-10" id="events-{{  day }}">
 
                                     <div class="row mb-5">
 
@@ -76,13 +77,13 @@
                                                             <td class="">{% if event.url != None %}<a class="text-decoration-none fw-bold" target="_blank" href="{{ event.url }}">{{ event.title }}</a>{% else %}<span class="fw-bold">{{ event.title }}</span>{% endif %}
                                                             <div class = "row-event-info fst-italic">
                                                             {% if event.description %}
-                                                                {{ truncate(event.description, 50) }}
+                                                                {{ truncate(value_display(event.get('description')), 50) }}
                                                             {% endif %}
                                                             </div>
                                                             </td>
                                                             <td>
                                                             {%  if event.all_day %}
-                                                                {{ event.weekday_start[:3] }}
+                                                                {{ value_display(event.get('weekday_start'))[:3] }}
                                                             {%  else %}
                                                                 {%  if event.start_datetime != None %}
                                                                     {{ event.start_datetime.strftime('%H:%M') }}
@@ -91,17 +92,17 @@
                                                             </td>
                                                             <td>
                                                             {%  if event.all_day %}
-                                                                {{ event.weekday_end[:3] }}
+                                                                {{ value_display(event.get('weekday_end'))[:3] }}
                                                             {%  else %}
                                                                 {%  if event.end_datetime != None %}
                                                                     {{ event.end_datetime.strftime('%H:%M') }}
                                                                 {% endif %}
                                                                 {%  if event.multi_day and event.weekday_end != None %}
-                                                                    ({{ event.weekday_end[:3] }})
+                                                                    ({{ value_display(event.get('weekday_end'))[:3] }})
                                                                 {% endif %}
                                                             {% endif %}
                                                             </td>
-                                                            <td class="text text-break"><span>{% if event.location != None %}{{ event.location }}{% endif %}</span></td>
+                                                            <td class="text text-break"><span>{{ value_display(event.get('location')) }}</span></td>
 
 
                                                         </tr>
@@ -129,6 +130,72 @@
         {% endfor %}
 
 
+<div class = "row" id="venues-outer">
+
+    <div class="row" id="venues">
+
+
+
+        <div class="col-12 col-xl-1 h5 pe-0">Venues</div>
+
+        <div class="col-12 col-xl-11">
+
+
+                <div class="row" id="">
+
+                    <div class="col-12 col-lg-2" >
+                    </div>
+
+                    <div class="ps-0 ps-lg-4 col-12 col-lg-10" id="">
+
+                        <div class="row mb-5">
+
+                        <table class="ms-3 mb-3 table-events table-fixed  table border rounded table-striped">
+
+                                <thead>
+                                    <tr class="row-title text-reset">
+                                        <th style="width:25%">Name</th>
+                                        <!--- <th style="width:35%">Description</th> ---->
+                                        <th style="width:40%">Address</th>
+                                    </tr>
+                                </thead>
+
+                                {% for venue in venues %}
+
+                                    <tr id="{{ venue.get('id') }}">
+
+                                        <td class="fw-bold">
+                                            {% if venue.get('url') != None %}
+                                                <a class="text-decoration-none" target="_blank"  href="{{ venue.get('url') }}">{{ value_display(venue.get('name')) }}</a>
+                                            {% else %}
+                                                {{ value_display(venue.get('name')) }}
+                                            {% endif %}
+                                        </td>
+                                        <!--- <td>{{ value_display(venue.get('description')) }}</td> --->
+                                        <td class="fst-italic">
+                                            {% if venue.get('address_url') != None %}
+                                                <a class="text-decoration-none" target="_blank"  href="{{ venue.get('address_url') }}">{{ value_display(venue.get('address')) }}</a>
+                                            {% else %}
+                                                {{ value_display(venue.get('address')) }}
+                                            {% endif %}
+                                        </td>
+
+                                    </tr>
+
+                                {% endfor %}
+
+                            </table>
+
+                        </div>
+
+                    </div>
+                </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 
 <div id="info" class="row me-xl-1">
@@ -146,7 +213,7 @@
             <p class="h3">About</p>
 
             <p>
-                This is an overview of events subject to personal taste inspired by <a href="https://www.nyc-noise.com">nyc-noise.com</a>.
+                This is an overview of events subject to personal taste inspired by <a target="_blank"  href="https://www.nyc-noise.com">nyc-noise.com</a>.
             </p>
     </div>
 
