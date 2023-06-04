@@ -8,6 +8,7 @@ import shutil
 import warnings
 
 site_title = 'mucnoise.com'
+url_theater = 'https://ghxm.github.io/theatermuc'
 
 schedule_path = utils.path_to_data_folder('events.json')
 
@@ -75,5 +76,6 @@ with open('site/index.html', 'w') as f:
                             today_datetime = utils.get_today(dt=True),
                             now = datetime.now(pytz.timezone('Europe/Berlin')),
                             path_exists = lambda x: os.path.exists(x),
-                            site_owner_email = site_owner_email))
+                            site_owner_email = site_owner_email),
+                            url_theater=url_theater)
 
