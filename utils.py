@@ -94,7 +94,7 @@ def split_yaml_text(text):
             return yaml, text
 
     # hard (without ---)
-    yaml_match = re.search(r'^[a-z0-9]+:\s.*\n(?:[ \t]+.*(?:\n|$))*', text, flags=re.MULTILINE)
+    yaml_match = re.search(r'^[a-z0-9]+:\s.*\n*(?:[ \t]+.*(?:\n|$))*', text, flags=re.MULTILINE)
 
     if yaml_match:
         yaml = yaml_match.group(0)

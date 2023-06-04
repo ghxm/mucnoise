@@ -164,6 +164,8 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
 
         if event_dict['description'] is not None:
 
+            yaml_dict = None
+
             # try to parse yaml from description
             yaml_desc, description = utils.split_yaml_text(event_dict['description'])
 
