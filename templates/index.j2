@@ -73,10 +73,23 @@
 
                                                     {% for event in schedule[year][kw][day] %}
 
-                                                        <tr class="row-event" id = "{{ event.uid }}">
-                                                            <td class="">{% if event.url != None %}<a class="text-decoration-none fw-bold" target="_blank" href="{{ event.url }}">{{ event.title }}</a>{% else %}<span class="fw-bold">{{ event.title }}</span>{% endif %}
+                                                        {% if event.get('event_day_num', 0) > 1 %}
+                                                            {%  set ongoing = True %}
+                                                        {% else %}
+                                                            {% set ongoing = False %}
+                                                        {% endif %}
+
+                                                        {% if event.get('duration_seconds', 0) > 60*60*24 %}
+                                                            {%  set long_event = True %}
+                                                        {% else %}
+                                                            {% set long_event = False %}
+                                                        {% endif %}
+
+
+                                                        <tr class="row-event" id = "{{ event.uid }}-{{ event_day_num }}">
+                                                            <td class="{% if ongoing %}fst-italic text-secondary{% endif %}">{% if ongoing %}(ongoing) {% endif %}{% if event.url != None %}<a class="{% if ongoing %}text-reset{% endif %} text-decoration-none fw-bold" target="_blank" href="{{ event.url }}">{{ event.title }}</a>{% else %}<span class="fw-bold">{{ event.title }}</span>{% endif %}
                                                             <div class = "row-event-info fst-italic">
-                                                            {% if event.description %}
+                                                            {% if event.description and not ongoing %}
                                                                 {{ truncate(value_display(event.get('description')), 100) }}
                                                             {% endif %}
                                                             </div>

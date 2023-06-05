@@ -4,11 +4,12 @@ import jinja2
 import utils
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 import shutil
 import warnings
 import yaml
+import pandas as pd
 
 site_title = 'mucnoise.com'
 url_theater = 'https://ghxm.github.io/theatermuc'
@@ -31,6 +32,29 @@ schedule = json.loads(schedule_str)
 
 schedule = utils.remove_past_events(schedule)
 
+# if an event is longer than 24h add it for each day
+schedule_modified = []
+
+for event in schedule:
+    if event['duration_seconds'] > 60*60*24:
+
+        # get days
+        if event['all_day']:
+            days = [d for d in utils.daterange(utils.make_datetime(event['start']), utils.make_datetime(event['end']))]
+        else:
+            days = [d for d in utils.daterange(datetime.fromisoformat(event['start']), datetime.fromisoformat(event['end']))]
+
+        for i, day in enumerate(days):
+            event_copy = event.copy()
+            event_copy['event_day_num'] = i+1
+            event_copy['date'] = utils.ymd_string(day)
+            event_copy['kw'] = utils.get_weeknum(day)
+            schedule_modified.append(event_copy)
+    else:
+        event['event_day_num'] = 1
+        schedule_modified.append(event)
+
+schedule = schedule_modified
 
 # aggregate schedule by day
 schedule = utils.aggregate_schedule(schedule, groups=['year','kw','date'])

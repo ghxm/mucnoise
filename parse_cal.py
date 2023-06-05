@@ -17,7 +17,7 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
     events = []
 
     # get recurring events for the next three months
-    raw_recurring_events = recurring_ical_events.of(cal, components=["VEVENT"]).between((2022,3,14), datetime.now(pytz.utc) + timedelta(days=31))
+    raw_recurring_events = recurring_ical_events.of(cal, components=["VEVENT"]).between((2022,3,14), datetime.now(pytz.utc) + timedelta(days=14))
 
     # get ALL events
     raw_events = [e for e in cal.walk()]
@@ -131,6 +131,12 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
             event_dict['end'] = event.get('DTEND').dt
         except:
             raise Exception('No end time found in event! Ics file invalid?')
+
+        # get duration from event
+        try:
+            event_dict['duration_seconds'] = (event_dict['end'] - event_dict['start']).total_seconds()
+        except:
+            raise Exception('Could not calculate duration for event!')
 
 
 
