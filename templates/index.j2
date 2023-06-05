@@ -77,7 +77,7 @@
                                                             <td class="">{% if event.url != None %}<a class="text-decoration-none fw-bold" target="_blank" href="{{ event.url }}">{{ event.title }}</a>{% else %}<span class="fw-bold">{{ event.title }}</span>{% endif %}
                                                             <div class = "row-event-info fst-italic">
                                                             {% if event.description %}
-                                                                {{ truncate(value_display(event.get('description')), 50) }}
+                                                                {{ truncate(value_display(event.get('description')), 100) }}
                                                             {% endif %}
                                                             </div>
                                                             </td>
@@ -222,7 +222,7 @@
         <p class="h3">How to suggest an event</p>
 
         <p>
-            Create a calendar event for the show in your local calendar application and invite <a href="mailto:{{ site_owner_email }}">{{ site_owner_email }}</a>. Please note that the event will be publicly visible once it is accepted.
+            Create a calendar event for the show in your local calendar application and invite <code>{{ site_owner_email|replace('@', '(at)') }}</code>. Please note that the event will be publicly visible once it is accepted.
         </p>
 
         <p>
