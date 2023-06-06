@@ -80,28 +80,28 @@ def split_yaml_text(text):
     yaml_match = re.search(r'^---\n.*\n---\n', text, flags=re.MULTILINE | re.DOTALL)
 
     if yaml_match:
-        yaml = yaml_match.group(0)
-        text = text.replace(yaml, '')
+        yaml_str = yaml_match.group(0)
+        text = text.replace(yaml_str, '')
 
         # try to parse the yaml to exclude yases where --- might have been added for fun
         try:
-            yaml = yaml.safe_load(yaml)
+            yaml.safe_load_all(yaml_str)
         except yaml.YAMLError as exc:
-            yaml = None
+            yaml_str = None
 
-        if yaml is not None:
+        if yaml_str is not None:
 
-            return yaml, text
+            return yaml_str, text
 
     # hard (without ---)
     yaml_match = re.findall(r'^[a-z0-9]+:\s.*\n*(?:[ \t]+.*(?:\n|$))*', text, flags=re.MULTILINE)
 
-    yaml = ''
+    yaml_str = ''
     for m in yaml_match:
-        yaml += m + '\n' if not m.endswith('\n') else m
+        yaml_str += m + '\n' if not m.endswith('\n') else m
         text = text.replace(m, '')
 
-    return yaml, text
+    return yaml_str, text
 
 def clean_description(text):
 
