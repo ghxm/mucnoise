@@ -223,7 +223,15 @@ def make_date(in_date, tz):
     return result
 
 
+def ensure_tz(dt, tz = "Europe/Berlin"):
+    """
+    Ensure that datetime object has timezone.
+    """
 
+    if dt.tzinfo is None:
+        dt = pytz.timezone(tz).localize(dt)
+
+    return dt
 
 def ymd_string (in_date):
     from datetime import datetime, timedelta, date

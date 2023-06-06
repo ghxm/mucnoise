@@ -56,6 +56,7 @@ for event in schedule:
 
 schedule = schedule_modified
 
+
 # aggregate schedule by day
 schedule = utils.aggregate_schedule(schedule, groups=['year','kw','date'])
 
@@ -65,8 +66,8 @@ for year in schedule.keys():
         for date in schedule[year][kw].keys():
             for event in schedule[year][kw][date]:
                 event['date_datetime'] = utils.make_date(event['date'], 'Europe/Berlin') if event['date'] is not None else None
-                event['start_datetime'] = datetime.fromisoformat(event['start']) if event['start'] is not None else None
-                event['end_datetime'] = datetime.fromisoformat(event['end']) if event['end'] is not None else None
+                event['start_datetime'] = utils.ensure_tz(datetime.fromisoformat(event['start'])) if event['start'] is not None else None
+                event['end_datetime'] = utils.ensure_tz(datetime.fromisoformat(event['end'])) if event['end'] is not None else None
 
 # get a dict of date-weekdays
 ## get all dates
@@ -78,6 +79,14 @@ for year in schedule.keys():
 
 
 date_weekdays = {date: utils.get_weekday(utils.make_date(date, tz='Europe/Berlin')) for date in dates}
+
+# sort by start_datetime
+for year in schedule.keys():
+    for kw in schedule[year].keys():
+        for date in schedule[year][kw].keys():
+            schedule[year][kw][date] = sorted(schedule[year][kw][date], key=lambda x: x['start_datetime'])
+
+
 
 
 # copy files from data to site/static/
