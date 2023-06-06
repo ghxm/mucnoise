@@ -101,7 +101,9 @@
                                                                 {%  if event.start_datetime != None %}
                                                                     {{ event.start_datetime.strftime('%H:%M') }}
                                                                 {% endif %}
-                                                            {% endif %}
+                                                                {%  if ongoing %}
+                                                                    ({{ value_display(event.get('weekday_start'))[:3] }})
+                                                                {% endif %}
                                                             </td>
                                                             <td>
                                                             {%  if event.all_day %}
