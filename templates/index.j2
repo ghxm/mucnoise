@@ -264,7 +264,28 @@
 
 </div>
 
+<script>
 
+    // replace swirls with @
+    const copyListener = (event) => {
+      const range = window.getSelection().getRangeAt(0),
+        rangeContents = range.cloneContents(),
+        pageLink = `Read more at: ${document.location.href}`,
+        helper = document.createElement("div");
+
+      helper.appendChild(rangeContents);
+
+      // replace swirls with @
+      helper.innerText = helper.innerText.replace(/꩜/g, "@");
+      helper.innerHTML = helper.innerHTML.replace(/꩜/g, "@");
+
+      event.clipboardData.setData("text/plain", helper.innerText);
+      event.clipboardData.setData("text/html", helper.innerHTML);
+      event.preventDefault();
+    };
+document.addEventListener("copy", copyListener);
+
+</script>
 
 </body>
 </html>
