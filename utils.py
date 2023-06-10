@@ -262,8 +262,8 @@ def schedule_to_rss(schedule, author_email = get_config().get('site_owner_email'
 
             fe = fg.add_entry()
             fe.guid(str(event['uid']))
-            fe.title(str(event['title']))
-            fe.link(href=str(event['url']))
+            fe.title(str(event.get('date')) + str(event.get('title', '')))
+            fe.link(href=event.get('url'))
 
             if 'start' in event:
                 start = event['start']
@@ -277,7 +277,7 @@ def schedule_to_rss(schedule, author_email = get_config().get('site_owner_email'
 
             for key, value in event.items():
                 if key not in ['uid', 'title', 'url', 'duration_seconds', 'kw', 'year', 'date', 'weekday_end', 'description']:
-                    description += '\n' + str(key) + ': ' + str(value)
+                    description += '\n\n' + str(key) + ': ' + str(value)
 
             description += '\n\n' + str(event['description'])
 
