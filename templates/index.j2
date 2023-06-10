@@ -27,13 +27,13 @@
         <a href="#venues" class="btn me-2 btn-outline-primary btn-sm">venues</a>
         <a href="#info" class="btn me-2 btn-outline-primary btn-sm">info</a>
         {%  if path_exists('site/static/events.ics') %}
-                <a  href="static/events.ics" class="btn me-2 btn-outline-primary btn-sm d-none d-md-block">.ics</a>
+                <a  href="static/events.ics" class="btn me-2 btn-outline-secondary btn-sm d-none d-md-block">.ics</a>
         {% endif %}
         {%  if path_exists('site/static/events.json') %}
-                <a href="static/events.json" class="btn me-2 btn-outline-primary btn-sm d-none d-md-block">.json</a>
+                <a href="static/events.json" class="btn me-2 btn-outline-secondary btn-sm d-none d-md-block">.json</a>
         {% endif %}
         {%  if path_exists('site/static/events.rss') %}
-                <a href="static/events.rss" class="btn me-2 btn-outline-primary btn-sm d-none d-md-block">.rss</a>
+                <a href="static/events.rss" class="btn me-2 btn-outline-secondary btn-sm d-none d-md-block">.rss</a>
         {% endif %}
         </div>
     </div>
