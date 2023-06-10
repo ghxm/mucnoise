@@ -35,10 +35,10 @@ jobs:
         uses: actions/configure-pages@v3
       - name: Build
         env:
-          CAL_URI: ${{ vars.CAL_URI }}
+          CAL_URI: ${{ secrets.CAL_URI }}
           SITE_OWNER_EMAIL: ${{ vars.SITE_OWNER_EMAIL }}
           ALLOW_UNACCEPTED: ${{ vars.ALLOW_UNACCEPTED }}
-          ALWAYS_ALLOW_SENDERS: ${{ vars.ALWAYS_ALLOW_SENDERS }}
+          ALWAYS_ALLOW_SENDERS: ${{ secrets.ALWAYS_ALLOW_SENDERS }}
         run: |
           # Build your site here
           pip3 install -r requirements.txt
