@@ -59,7 +59,7 @@
                             <div class="row" id="date-{{  day }}">
 
                                 <div class="col-12 col-lg-2" >
-                                    <p class="h5 text-nowrap {% if day==today %}text-warning{% endif %}">{% if day==today %}Today{% else %}{{ date_weekdays[day][:3] }}{% endif %}, {{ day }}</p>
+                                    <p class="h5 text-nowrap ">{% if day==today %}<span>Today</span>{% else %}{{ date_weekdays[day][:3] }}{% endif %}, {{ day }}</p>
                                 </div>
 
                                 <div class="ps-0 ps-lg-4 col-12 col-lg-10" id="events-{{  day }}">
