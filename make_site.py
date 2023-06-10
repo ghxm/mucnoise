@@ -12,7 +12,7 @@ import yaml
 import pandas as pd
 
 
-config = utils.get_config()
+config = utils.get_config(get_all=True)
 
 schedule_path = utils.path_to_data_folder('events.json')
 
