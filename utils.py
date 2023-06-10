@@ -12,7 +12,6 @@ import warnings
 import json
 import icalendar
 import pandas as pd
-import csv
 
 
 def get_config(prefix = "", get_all = False):
@@ -239,7 +238,7 @@ def schedule_to_ics(schedule):
     return cal.to_ical().decode('utf-8')
 
 def schedule_to_csv(schedule):
-
+    import csv
 
     df = pd.DataFrame.from_records(schedule)
     csv = df.to_csv(index=False, quoting=csv.QUOTE_ALL, sep=',')
