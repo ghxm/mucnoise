@@ -75,7 +75,7 @@ The is configured to allow invites to be sent to the event owner. The owner's em
 
 ## Venues
 
-The site can display a list of venues. Venues can be added by creating YAML files in the `venues` folder. The file name is used as the id of the venue. Currently, only, the following fields are supported:
+The site can display a list of venues. Venues can be added by creating YAML files in the `data/venues` folder. The file name is used as the id of the venue. Currently, only, the following fields are supported:
 
 ```
 name: The name of the venue
