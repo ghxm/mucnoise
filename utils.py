@@ -24,6 +24,12 @@ def get_config(prefix = "", get_all = False):
         del config['cal_uri']
         warnings.warn('No calendar URI found in environment variables.')
 
+    # get cal url from environment vars
+    config['cal_email'] = os.environ.get(prefix + 'CAL_EMAIL')
+    if config['cal_email'] is None:
+        del config['cal_email']
+        warnings.warn('No calendar E-mail found in environment variables.')
+
     config['timezone'] = os.environ.get(prefix + 'TIMEZONE')
     if config['timezone'] is None:
         warnings.warn('No timezone found in environment variables. Assuming machine local timezone.')
