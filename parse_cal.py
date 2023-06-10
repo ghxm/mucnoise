@@ -41,6 +41,25 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
         except:
             raise Exception('No UID found in event! Ics file invalid?')
 
+        # get created from event if set
+        try:
+            event_dict['created'] = event.get('CREATED').dt
+        except:
+            event_dict['created'] = None
+
+        if event_dict['created'] is None:
+            try:
+                event_dict['created'] = event.get('DTSTAMP').dt
+            except:
+                del event_dict['created']
+                event_dict['created'] = None
+
+        # get last updated from event if set
+        try:
+            event_dict['last_modified'] = event.get('LAST-MODIFIED').dt
+        except:
+            pass
+
         try:
             # check for EXDATE rules in recurring events
             if 'EXDATE' in event.keys():

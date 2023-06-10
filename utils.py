@@ -207,6 +207,10 @@ def schedule_to_json(schedule):
                 event_json['start'] = value.isoformat()
             elif key == 'end':
                 event_json['end'] = value.isoformat()
+            elif key == 'created':
+                event_json['created'] = value.isoformat()
+            elif key == 'last_modified':
+                event_json['last_modified'] = value.isoformat()
             else:
                 event_json[key] = value
 
@@ -262,21 +266,36 @@ def schedule_to_rss(schedule, author_email = get_config().get('site_owner_email'
 
             fe = fg.add_entry()
             fe.guid(str(event['uid']))
-            fe.title(str(event.get('date')) + str(event.get('title', '')))
+            fe.title(str(event.get('date')) + ':' + str(event.get('title', '')))
             fe.link(href=event.get('url'))
 
-            if 'start' in event:
-                start = event['start']
-                if isinstance(start, datetime):
-                    start = start.astimezone(tz)
-                elif isinstance(start, date):
-                    start = datetime.combine(start, datetime.min.time()).astimezone(tz)
-                fe.pubDate(start)
+            if 'created' in event:
+                pub_date = event['created']
+            else:
+                pub_date = datetime.now(tz)
+
+            if isinstance(pub_date, datetime):
+                pub_date = pub_date.astimezone(tz)
+            elif isinstance(pub_date, date):
+                pub_date = datetime.combine(pub_date, datetime.min.time()).astimezone(tz)
+            fe.pubDate(pub_date)
+
+
+            if 'last_modified' in event:
+                last_modified = event['last_modified']
+
+                if isinstance(last_modified, datetime):
+                    last_modified = last_modified.astimezone(tz)
+                elif isinstance(last_modified, date):
+                    last_modified = datetime.combine(last_modified, datetime.min.time()).astimezone(tz)
+                fe.updated(last_modified)
+
+
 
             description = ''
 
             for key, value in event.items():
-                if key not in ['uid', 'title', 'url', 'duration_seconds', 'kw', 'year', 'date', 'weekday_end', 'description']:
+                if key not in ['uid', 'title', 'url', 'duration_seconds', 'kw', 'year', 'date', 'weekday_end', 'description', 'created']:
                     description += '\n\n' + str(key) + ': ' + str(value)
 
             description += '\n\n' + str(event['description'])
