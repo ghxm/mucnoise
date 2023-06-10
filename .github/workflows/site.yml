@@ -39,6 +39,11 @@ jobs:
           SITE_OWNER_EMAIL: ${{ vars.SITE_OWNER_EMAIL }}
           ALLOW_UNACCEPTED: ${{ vars.ALLOW_UNACCEPTED }}
           ALWAYS_ALLOW_SENDERS: ${{ secrets.ALWAYS_ALLOW_SENDERS }}
+          CAL_EMAIL: ${{ secrets.CAL_EMAIL }}
+          SITE_OWNER_EMAIL: ${{ secrets.SITE_OWNER_EMAIL }}
+          TIMEZONE: ${{ vars.TIMEZONE }}
+          SITE_TITLE: ${{ vars.SITE_TITLE }}
+          SITE_URL: ${{ vars.SITE_URL }}
         run: |
           # Build your site here
           pip3 install -r requirements.txt
