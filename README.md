@@ -1,6 +1,6 @@
 # mucnoise event repository
 
-Create a website showcasing events, inspired by [nyc-noise.com](https://www.nyc-noise.com), based on a shared calendar (e.g. Google, Proton). It can be deployed on GitHub Pages (see @TODO) for an example that deploys [mucnoise.com](https://mucnoise.com).
+Create a website showcasing events, inspired by [nyc-noise.com](https://www.nyc-noise.com), based on a shared calendar (e.g. Google, Proton). It can be deployed on GitHub Pages (see [this site.yml](/../github-pages/.github/workflows/site.yml) for an example using GitHub Actions) for an example that deploys [mucnoise.com](https://mucnoise.com).
 
 Note: This has been tested with Proton calendars only and is not guaranteed to work with other providers.
 
@@ -84,7 +84,9 @@ address_url: The URL of the venue's address
 url: The URL of the venue
 ```
 
-Examples can be found in @TODO.
+Note: Files starting with an underscore (`_`) are ignored.
+
+Examples can be found in [the `venues` folder of the `github-pages` deployment branch](/../github-pages/veneus).
 
 
 
