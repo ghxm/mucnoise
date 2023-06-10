@@ -7,7 +7,75 @@ import pytz
 import os
 import itertools
 from collections import defaultdict
+from feedgen.feed import FeedGenerator
+import warnings
+import json
 
+
+def get_config(prefix = "", get_all = False):
+
+    config = {}
+
+    # get cal url from environment vars
+    config['cal_uri'] = os.environ.get(prefix + 'CAL_URI')
+    if config['cal_uri'] is None:
+        del config['cal_uri']
+        warnings.warn('No calendar URI found in environment variables.')
+
+    config['timezone'] = os.environ.get(prefix + 'TIMEZONE')
+    if config['timezone'] is None:
+        warnings.warn('No timezone found in environment variables. Assuming machine local timezone.')
+        config['timezone'] = datetime.now().astimezone().tzinfo
+
+    # get site title
+    config['site_title'] = os.environ.get(prefix + 'SITE_TITLE')
+    if config['site_title'] is None:
+        del config['site_title']
+        warnings.warn('No site title found in environment variables.')
+
+    # get site url
+    config['site_url'] = os.environ.get(prefix + 'SITE_URL')
+    if config['site_url'] is None:
+        del config['site_url']
+        warnings.warn('No site url found in environment variables.')
+
+    config['site_description'] = os.environ.get(prefix + 'SITE_DESCRIPTION')
+    if config['site_description'] is None:
+        del config['site_description']
+        warnings.warn('No site description found in environment variables.')
+
+    # get site owner email
+    config['site_owner_email'] = os.environ.get(prefix + 'SITE_OWNER_EMAIL')
+    if config['site_owner_email'] is None:
+        del config['site_owner_email']
+        warnings.warn('No site owner email found in environment variables.')
+
+    # get allow_unaccepted from environment vars
+    config['allow_unaccepted'] = os.getenv(prefix + 'ALLOW_UNACCEPTED', 'False').lower() in ('true', '1', 't')
+
+    # get always_allow_senders from environment vars
+    config['always_allow_senders'] = json.loads(os.environ.get(prefix + 'ALWAYS_ALLOW_SENDERS', '[]'))
+
+    # get recurring events days into the future from environment vars
+    config['recurring_events_days'] = float(os.getenv(prefix + 'RECURRING_EVENTS_DAYS', '14'))
+
+    if get_all:
+        # get all environment variables
+        config.update({key.lower(): val for key, val in dict(os.environ).items() if key.startswith(prefix)})
+
+    return config
+
+def dict_has_key(dict, key):
+
+    if isinstance(key, (str, int, float)):
+        return key in dict
+
+    if callable(key):
+
+        if any([key(k) for k in dict.keys()]):
+            return True
+        else:
+            return False
 
 def path_to_folder(filename=None, folder=None):
     """
@@ -172,6 +240,52 @@ def schedule_to_csv(schedule):
     csv = df.to_csv(index=False, quoting=csv.QUOTE_ALL, sep=',')
 
     return csv
+
+
+def schedule_to_rss(schedule, author_email = get_config().get('site_owner_email', ''), url = get_config().get('site_url', ''), title = get_config().get('site_title', ''), description = get_config().get('site_description', ''), tz = get_config().get('timezone', 'Europe/Berlin')):
+
+    if not str(url).endswith('/'):
+        url += '/'
+
+    tz = pytz.timezone(tz)
+
+    fg = FeedGenerator()
+    fg.id(str(url))
+    fg.title(str(title))
+    fg.description(str(description))
+    fg.author({'name': str(title), 'email': str(author_email)})
+    fg.link(href=str(url) + 'static/events.rss', rel='self')
+    fg.language('en')
+    fg.lastBuildDate(datetime.now(tz))
+
+    for event in schedule:
+
+            fe = fg.add_entry()
+            fe.guid(str(event['uid']))
+            fe.title(str(event['title']))
+            fe.link(href=str(event['url']))
+
+            if 'start' in event:
+                start = event['start']
+                if isinstance(start, datetime):
+                    start = start.astimezone(tz)
+                elif isinstance(start, date):
+                    start = datetime.combine(start, datetime.min.time()).astimezone(tz)
+                fe.pubDate(start)
+
+            description = ''
+
+            for key, value in event.items():
+                if key not in ['uid', 'title', 'url', 'duration_seconds', 'kw', 'year', 'date', 'weekday_end', 'description']:
+                    description += '\n' + str(key) + ': ' + str(value)
+
+            description += '\n\n' + str(event['description'])
+
+            fe.description(description)
+            fe.source(str(url) + '#' + str(event['uid']))
+
+
+    return fg.rss_str(pretty=True).decode('utf-8')
 
 def daterange(start_date, end_date):
     for n in range(int((end_date - start_date).days)):

@@ -12,12 +12,12 @@ import warnings
 import re
 
 # function to parse the ics file and return a list of events
-def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders = [], site_owner_email = None):
+def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders = [], site_owner_email = None, include_recurring_events_days = 14):
 
     events = []
 
     # get recurring events for the next three months
-    raw_recurring_events = recurring_ical_events.of(cal, components=["VEVENT"]).between((2022,3,14), datetime.now(pytz.utc) + timedelta(days=14))
+    raw_recurring_events = recurring_ical_events.of(cal, components=["VEVENT"]).between((2022,3,14), datetime.now(pytz.utc) + timedelta(days=include_recurring_events_days))
 
     # get ALL events
     raw_events = [e for e in cal.walk()]
@@ -229,16 +229,15 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
     return events
 
 
-
-# get cal url from environment vars
-cal_uri = os.environ.get('CAL_URI')
-
-if cal_uri is None:
-    raise ValueError('No calendar URI found in environment variables.')
+# get config
+try:
+    config = utils.get_config()
+except Exception as e:
+    raise ValueError('Could not read config. Error: ' + str(e))
 
 # get cal
 try:
-    cal = utils.read_cal(cal_uri)
+    cal = utils.read_cal(config.get('cal_uri'))
 except Exception as e:
     raise ValueError('Could not read calendar. Error: ' + str(e))
 
@@ -246,54 +245,61 @@ except Exception as e:
 outpaths = [
     utils.path_to_data_folder('events.json'),
     utils.path_to_data_folder('events.csv'),
-    utils.path_to_data_folder('events.ics')
+    utils.path_to_data_folder('events.ics'),
+    utils.path_to_data_folder('events.rss')
 ]
 
 if len(outpaths) == 0:
     warnings.warn('No output paths found in environment variables.')
 
-try:
-    site_owner_email = os.environ.get('SITE_OWNER_EMAIL')
-except:
-    site_owner_email = None
-    warnings.warn('No site owner email found in environment variables.')
-
-# get allow_unaccepted from environment vars
-allow_unaccepted = os.getenv("ALLOW_UNACCEPTED", 'False').lower() in ('true', '1', 't')
-
-# get always_allow_senders from environment vars
-always_allow_senders = json.loads(os.environ.get('ALWAYS_ALLOW_SENDERS', '[]'))
 
 # parse cal
-events = parse_cal(cal, outpaths, allow_unaccepted, always_allow_senders, site_owner_email)
+events = parse_cal(cal, outpaths, allow_unaccepted=config.get('allow_unaccepted'), always_allow_senders=config.get('always_allow_senders'), site_owner_email=config.get('site_owner_email'))
 
 # write events to outpaths
 for outp in outpaths:
     if outp.endswith('.json'):
-        events_json = utils.schedule_to_json(events)
 
-        with open(outp, 'w') as f:
-            json.dump(events_json, f, indent=4)
+        try:
+            events_json = utils.schedule_to_json(events)
+            with open(outp, 'w') as f:
+                json.dump(events_json, f, indent=4)
+        except Exception as e:
+            w = 'Could not create json file. Error: ' + str(e)
+            warnings.warn(w)
+
 
     elif outp.endswith('.csv'):
-        events_csv = utils.schedule_to_csv(events)
 
-        with open(outp, 'w') as f:
-            f.write(events_csv)
+        try:
+            events_csv = utils.schedule_to_csv(events)
+            with open(outp, 'w') as f:
+                f.write(events_csv)
+        except Exception as e:
+            w = 'Could not create csv file. Error: ' + str(e)
+            warnings.warn(w)
+
 
     elif outp.endswith('.ics'):
 
-        events_ics = utils.schedule_to_ics(events)
 
-        with open(outp, 'w') as f:
-            f.write(events_ics)
-
-
-
-
-
-
+        try:
+            events_ics = utils.schedule_to_ics(events)
+            with open(outp, 'w') as f:
+                f.write(events_ics)
+        except Exception as e:
+            w = 'Could not create ics file. Error: ' + str(e)
+            warnings.warn(w)
 
 
 
-# get auto-trust addresses from environment data
+    elif outp.endswith('.rss'):
+
+        try:
+            events_rss = utils.schedule_to_rss(events)
+            with open(outp, 'w') as f:
+                f.write(events_rss)
+        except Exception as e:
+            w = 'Could not create rss feed. Error: ' + str(e)
+            warnings.warn(w)
+

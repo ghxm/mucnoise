@@ -11,8 +11,8 @@ import warnings
 import yaml
 import pandas as pd
 
-site_title = 'mucnoise.com'
-url_theater = 'https://ghxm.github.io/theatermuc'
+
+config = utils.get_config()
 
 schedule_path = utils.path_to_data_folder('events.json')
 
@@ -87,8 +87,6 @@ for year in schedule.keys():
             schedule[year][kw][date] = sorted(schedule[year][kw][date], key=lambda x: x['start_datetime'])
 
 
-
-
 # copy files from data to site/static/
 data = [f for f in os.listdir(utils.path_to_data_folder()) if not  os.path.isdir(os.path.join(utils.path_to_data_folder(), f)) and not f.startswith('.') or f.startswith('_')]
 
@@ -96,12 +94,6 @@ static_folder = utils.path_to_site_folder('static')
 
 for f in data:
     shutil.copyfile(utils.path_to_data_folder(f), os.path.join(static_folder, f))
-
-try:
-    site_owner_email = os.environ.get('SITE_OWNER_EMAIL')
-except:
-    site_owner_email = None
-    warnings.warn('No site owner email found in environment variables.')
 
 
 # VENUES
@@ -136,10 +128,13 @@ venues = sorted(venues, key=lambda x: x['id'])
 
 # MAKE SITE
 
+# @TODO replace individual variables with config dict
+
 # Write the rendered template to a file
 with open('site/index.html', 'w') as f:
-    f.write(template.render(site_title=site_title,
+    f.write(template.render(config = config,
                             schedule=schedule,
+                            venues=venues,
                             date_weekdays=date_weekdays,
                             today = utils.get_today(),
                             today_datetime = utils.get_today(dt=True),
@@ -147,9 +142,7 @@ with open('site/index.html', 'w') as f:
                             path_exists = lambda x: os.path.exists(x),
                             truncate = lambda x, n: x[:n] + '...' if len(x) > n else x,
                             value_display = lambda x: x if x is not None else '',
-                            site_owner_email = site_owner_email,
-                            url_theater=url_theater,
-                            venues=venues
+                            dict_has_key = utils.dict_has_key
                             )
                             )
 

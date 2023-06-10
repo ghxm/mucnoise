@@ -28,6 +28,9 @@
         {%  if path_exists('site/static/events.json') %}
                 <a href="static/events.json" class="btn me-2 btn-outline-primary btn-sm d-none d-md-block">.json</a>
         {% endif %}
+        {%  if path_exists('site/static/events.rss') %}
+                <a href="static/events.rss" class="btn me-2 btn-outline-primary btn-sm d-none d-md-block">.rss</a>
+        {% endif %}
         </div>
     </div>
 
@@ -240,7 +243,7 @@
         <p class="h3">How to suggest an event</p>
 
         <p>
-            Create a calendar event for the show in your local calendar application and invite <code>{{ site_owner_email|replace('@', '꩜') }}</code> (note: you'll need to replace the <code>꩜</code>) or write a regular e-mail. Please note that the event will be publicly visible once it is accepted.
+            Create a calendar event for the show in your local calendar application and invite <code>{{ cal_email|replace('@', '꩜') }}</code> (note: you'll need to replace the <code>꩜</code>) or write a regular e-mail. Please note that the event will be publicly visible once it is accepted.
         </p>
 
         <p>
