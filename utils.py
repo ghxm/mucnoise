@@ -10,6 +10,8 @@ from collections import defaultdict
 from feedgen.feed import FeedGenerator
 import warnings
 import json
+import icalendar
+import pandas as pd
 
 
 def get_config(prefix = "", get_all = False):
@@ -219,7 +221,6 @@ def schedule_to_json(schedule):
     return schedule_json
 
 def schedule_to_ics(schedule):
-    import icalendar
 
     cal = icalendar.Calendar()
 
@@ -237,8 +238,7 @@ def schedule_to_ics(schedule):
     return cal.to_ical().decode('utf-8')
 
 def schedule_to_csv(schedule):
-    import csv
-    import pandas as pd
+
 
     df = pd.DataFrame.from_records(schedule)
     csv = df.to_csv(index=False, quoting=csv.QUOTE_ALL, sep=',')
@@ -369,7 +369,7 @@ def ensure_tz(dt, tz = "Europe/Berlin"):
     return dt
 
 def ymd_string (in_date):
-    from datetime import datetime, timedelta, date
+
 
     # try to parse date
     if isinstance(in_date, str):
