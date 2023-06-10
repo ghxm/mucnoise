@@ -246,7 +246,7 @@ def schedule_to_csv(schedule):
     return csv
 
 
-def schedule_to_rss(schedule, author_email = get_config().get('site_owner_email', ''), url = get_config().get('site_url', ''), title = get_config().get('site_title', ''), description = get_config().get('site_description', ''), tz = get_config().get('timezone', 'Europe/Berlin')):
+def schedule_to_rss(schedule, author_email = get_config().get('site_owner_email', ''), url = get_config().get('site_url', ''), title = get_config().get('site_title', ''), content = get_config().get('site_description', ''), tz = get_config().get('timezone', 'Europe/Berlin')):
 
     if not str(url).endswith('/'):
         url += '/'
@@ -256,7 +256,7 @@ def schedule_to_rss(schedule, author_email = get_config().get('site_owner_email'
     fg = FeedGenerator()
     fg.id(str(url))
     fg.title(str(title))
-    fg.description(str(description))
+    fg.description(str(content))
     fg.author({'name': str(title), 'email': str(author_email)})
     fg.link(href=str(url) + 'static/events.rss', rel='self')
     fg.language('en')
@@ -266,7 +266,7 @@ def schedule_to_rss(schedule, author_email = get_config().get('site_owner_email'
 
             fe = fg.add_entry()
             fe.guid(str(event['uid']))
-            fe.title(str(event.get('date')) + ':' + str(event.get('title', '')))
+            fe.title(str(event.get('date')) + ': ' + str(event.get('title', '')))
             fe.link(href=event.get('url'))
 
             if 'created' in event:
@@ -292,16 +292,18 @@ def schedule_to_rss(schedule, author_email = get_config().get('site_owner_email'
 
 
 
-            description = ''
+            content = ''
 
             for key, value in event.items():
                 if key not in ['uid', 'title', 'url', 'duration_seconds', 'kw', 'year', 'date', 'weekday_end', 'description', 'created']:
-                    description += '\n\n' + str(key) + ': ' + str(value)
+                    content += '\n\n' + str(key) + ': ' + str(value)
 
-            description += '\n\n' + str(event['description'])
+            content += '\n\n' + str(event['description'])
 
-            fe.description(description)
+            fe.content(content)
             fe.source(str(url) + '#' + str(event['uid']))
+
+            fe.description(str(event['description'][:80] + '...'))
 
 
     return fg.rss_str(pretty=True).decode('utf-8')
