@@ -142,6 +142,7 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
         # get start time from event
         try:
             event_dict['start'] = event.get('DTSTART').dt
+
         except:
             raise Exception('No start time found in event! Ics file invalid?')
 
