@@ -27,7 +27,7 @@ schedule_str = open(schedule_path, 'r').read()
 schedule = json.loads(schedule_str)
 
 
-schedule = utils.remove_past_events(schedule, cutoff_date=utils.ensure_tz(datetime.now(), tz='Europe/Berlin') + timedelta(hours=2))
+schedule = utils.remove_past_events(schedule, cutoff_date=utils.ensure_tz(datetime.now(), tz=config.get('timezone')) + timedelta(hours=2))
 
 # if an event is longer than 24h add it for each day
 schedule_modified = []
@@ -62,9 +62,9 @@ for year in schedule.keys():
     for kw in schedule[year].keys():
         for date in schedule[year][kw].keys():
             for event in schedule[year][kw][date]:
-                event['date_datetime'] = utils.make_date(event['date'], 'Europe/Berlin') if event['date'] is not None else None
-                event['start_datetime'] = utils.ensure_tz(datetime.fromisoformat(event['start'])) if event['start'] is not None else None
-                event['end_datetime'] = utils.ensure_tz(datetime.fromisoformat(event['end'])) if event['end'] is not None else None
+                event['date_datetime'] = utils.make_date(event['date'], config.get('timezone')) if event['date'] is not None else None
+                event['start_datetime'] = utils.ensure_tz(datetime.fromisoformat(event['start']), config.get('timezone')) if event['start'] is not None else None
+                event['end_datetime'] = utils.ensure_tz(datetime.fromisoformat(event['end']), config.get('timezone')) if event['end'] is not None else None
 
 # get a dict of date-weekdays
 ## get all dates
@@ -75,7 +75,7 @@ for year in schedule.keys():
             dates.append(date)
 
 
-date_weekdays = {date: utils.get_weekday(utils.make_date(date, tz='Europe/Berlin')) for date in dates}
+date_weekdays = {date: utils.get_weekday(utils.make_date(date, tz=config.get('timezone'))) for date in dates}
 
 # sort by start_datetime
 for year in schedule.keys():
@@ -135,7 +135,7 @@ with open('site/index.html', 'w') as f:
                             date_weekdays=date_weekdays,
                             today = utils.get_today(),
                             today_datetime = utils.get_today(return_date_obj=True),
-                            now = datetime.now(pytz.timezone('Europe/Berlin')),
+                            now = datetime.now(pytz.timezone(config.get('timezone'))),
                             path_exists = lambda x: os.path.exists(x),
                             truncate = lambda x, n: x[:n] + '...' if len(x) > n else x,
                             value_display = lambda x: x if x is not None else '',

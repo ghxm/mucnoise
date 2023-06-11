@@ -318,7 +318,7 @@ def daterange(start_date, end_date):
     for n in range(int((end_date - start_date).days)):
         yield start_date + timedelta(n)
 
-def make_datetime(in_date, time = "00:00", tz="Europe/Berlin"):
+def make_datetime(in_date, time = "00:00", tz=get_config().get('timezone', 'Europe/Berlin')):
     """
     Make datetime object from date and time.
     """
@@ -364,13 +364,18 @@ def make_date(in_date, tz):
     return result
 
 
-def ensure_tz(dt, tz = "Europe/Berlin"):
+def ensure_tz(dt, tz = get_config().get('timezone', 'Europe/Berlin')):
     """
     Ensure that datetime object has timezone.
     """
 
     if dt.tzinfo is None:
         dt = pytz.timezone(tz).localize(dt)
+
+    # if timezone is not tz, convert
+    if dt.tzinfo != tz:
+        dt = dt.astimezone(pytz.timezone(tz))
+
 
     return dt
 
@@ -407,7 +412,7 @@ def get_weeknum(date):
     # retrun the week number
     return date.strftime('%V')
 
-def get_today(return_date_obj = False, tz ='Europe/Berlin'):
+def get_today(return_date_obj = False, tz =get_config().get('timezone')):
 
     # set timezone
     tz = pytz.timezone(tz)
@@ -429,7 +434,7 @@ def remove_past_events(schedule, cutoff_date=get_today(return_date_obj=True)):
     elif isinstance(cutoff_date, date):
         # keep events that end on cutoff date
 
-        schedule = [event for event in schedule if make_date(datetime.fromisoformat(event['end']), 'Europe/Berlin') >= cutoff_date if
+        schedule = [event for event in schedule if make_date(datetime.fromisoformat(event['end']), get_config().get('timezone', 'Europe/Berlin')) >= cutoff_date if
                     event['end'] != '' and event['end'] is not None]
 
 
