@@ -407,22 +407,32 @@ def get_weeknum(date):
     # retrun the week number
     return date.strftime('%V')
 
-def get_today(dt = False, tz = 'Europe/Berlin'):
+def get_today(return_date_obj = False, tz ='Europe/Berlin'):
 
     # set timezone
     tz = pytz.timezone(tz)
 
-    if dt:
+    if return_date_obj:
         return datetime.now(tz).date()
     else:
 
         return datetime.now(tz).date().strftime('%Y-%m-%d')
 
-def remove_past_events(schedule, date=get_today(dt=True)):
+def remove_past_events(schedule, cutoff_date=get_today(return_date_obj=True)):
 
-    # filter past events
-    schedule = [event for event in schedule if make_date(datetime.fromisoformat(event['end']), 'Europe/Berlin') >= date if
-                event['end'] != '' and event['end'] is not None]
+
+
+    if isinstance(cutoff_date, datetime):
+        # keep events that end before cutoff datetime
+        schedule = [event for event in schedule if ensure_tz(datetime.fromisoformat(event['end'])) >= cutoff_date]
+
+
+    elif isinstance(cutoff_date, date):
+        # keep events that end on cutoff date
+
+        schedule = [event for event in schedule if make_date(datetime.fromisoformat(event['end']), 'Europe/Berlin') >= cutoff_date if
+                    event['end'] != '' and event['end'] is not None]
+
 
     return schedule
 

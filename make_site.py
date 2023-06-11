@@ -27,7 +27,7 @@ schedule_str = open(schedule_path, 'r').read()
 schedule = json.loads(schedule_str)
 
 
-schedule = utils.remove_past_events(schedule)
+schedule = utils.remove_past_events(schedule, cutoff_date=utils.ensure_tz(datetime.now(), tz='Europe/Berlin') + timedelta(hours=2))
 
 # if an event is longer than 24h add it for each day
 schedule_modified = []
@@ -134,7 +134,7 @@ with open('site/index.html', 'w') as f:
                             venues=venues,
                             date_weekdays=date_weekdays,
                             today = utils.get_today(),
-                            today_datetime = utils.get_today(dt=True),
+                            today_datetime = utils.get_today(return_date_obj=True),
                             now = datetime.now(pytz.timezone('Europe/Berlin')),
                             path_exists = lambda x: os.path.exists(x),
                             truncate = lambda x, n: x[:n] + '...' if len(x) > n else x,
