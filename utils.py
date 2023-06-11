@@ -421,10 +421,9 @@ def get_today(return_date_obj = False, tz ='Europe/Berlin'):
 def remove_past_events(schedule, cutoff_date=get_today(return_date_obj=True)):
 
 
-
     if isinstance(cutoff_date, datetime):
-        # keep events that end before cutoff datetime
-        schedule = [event for event in schedule if ensure_tz(datetime.fromisoformat(event['end'])) >= cutoff_date]
+        # keep events that end before cutoff datetime or start on the same day
+        schedule = [event for event in schedule if ensure_tz(datetime.fromisoformat(event['end'])) >= cutoff_date or ensure_tz(datetime.fromisoformat(event['end'])).date() == cutoff_date.date()]
 
 
     elif isinstance(cutoff_date, date):
