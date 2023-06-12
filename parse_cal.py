@@ -95,11 +95,6 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
             if partstat == 'DECLINED':
                 continue
 
-            if not allow_unaccepted:
-
-                if partstat != 'ACCEPTED':
-                    continue
-
 
         # check whether event is confirmed
         sender = event.get('ORGANIZER', None)
@@ -112,14 +107,17 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
 
             sender_attendee = [s.split(':')[1] for s in sender_attendee if s is not None]
 
-            if not allow_unaccepted and partstat is None:
-
-                warnings.warn(f'Could not get parstat for event with UID {event.get("uid")}, skipping.')
-                continue
-
             if not any([se for se in sender_attendee if se in always_allow_senders]):
 
-                continue
+                if not allow_unaccepted and partstat is None:
+
+                    warnings.warn(f'Could not get parstat for event with UID {event.get("uid")}, skipping.')
+                    continue
+                elif not allow_unaccepted and partstat != 'ACCEPTED':
+
+                    continue
+
+
 
 
 
@@ -218,11 +216,11 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
             if description is not None:
                 if partstat is not None:
                     if partstat in ['TENTATIVE', 'NEEDS-ACTION']:
-                        event_dict['description'] = utils.clean_description(description, remove_links=True)
-                    else:
                         event_dict['description'] = utils.clean_description(description)
+                    else:
+                        event_dict['description'] = description
                 else:
-                    event_dict['description'] = utils.clean_description(description)
+                    event_dict['description'] = description
 
 
         # ADD DATE ATTRIBUTES
