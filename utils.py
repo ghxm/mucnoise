@@ -309,7 +309,8 @@ def schedule_to_rss(schedule, author_email = get_config().get('site_owner_email'
             fe.content(content)
             fe.source(str(url) + '#' + str(event['uid']))
 
-            fe.description(str(event['description'][:80] + '...'))
+            if event['description'] is not None:
+                fe.description(str(event['description'][:80] + '...'))
 
 
     return fg.rss_str(pretty=True).decode('utf-8')
