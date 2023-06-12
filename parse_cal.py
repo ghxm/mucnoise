@@ -175,6 +175,9 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
         except:
             event_dict['location'] = None
 
+        if event_dict['location'] is not None:
+            event_dict['location'] = event_dict.split('\n')[0]
+
         # get title from event if set
         try:
             event_dict['title'] = event.get('SUMMARY')
