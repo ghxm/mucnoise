@@ -95,25 +95,31 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
             if partstat == 'DECLINED':
                 continue
 
+            if not allow_unaccepted:
+
+                if partstat != 'ACCEPTED':
+                    continue
+
 
         # check whether event is confirmed
         sender = event.get('ORGANIZER', None)
+        attendee = event.get('ATTENDEE', None)
 
-        if sender is not None:
+        sender_attendee = [sender] if sender is not None else []
+        sender_attendee.extend([attendee[0]] if attendee is not None and isinstance(attendee, list) and len(attendee) > 0 else [])
 
-            sender = sender.split(':')[1]
+        if len(sender_attendee) > 0:
 
-            if sender not in always_allow_senders:
+            sender_attendee = [s.split(':')[1] for s in sender_attendee if s is not None]
 
-                if not allow_unaccepted:
+            if not allow_unaccepted and partstat is None:
 
-                    if partstat is not None:
-                        if partstat != 'ACCEPTED':
-                            continue
-                    else:
+                warnings.warn(f'Could not get parstat for event with UID {event.get("uid")}, skipping.')
+                continue
 
-                        warnings.warn(f'Could not get parstat for event with UID {event.get("uid")}, skipping.')
-                        continue
+            if not any([se for se in sender_attendee if se in always_allow_senders]):
+
+                continue
 
 
 
