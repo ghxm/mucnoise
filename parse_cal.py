@@ -94,8 +94,7 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
         if partstat is not None:
             if partstat == 'DECLINED':
                 continue
-            elif partstat in ['TENTATIVE', 'NEEDS-ACTION']:
-                description = utils.remove_html_tags(description)
+
 
         # check whether event is confirmed
         sender = event.get('ORGANIZER', None)
@@ -208,9 +207,16 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
                 if yaml_dict is not None:
                     event_dict.update(yaml_dict)
 
+
             # parse description and add to event_dict
             if description is not None:
-                event_dict['description'] = utils.clean_description(description)
+                if partstat is not None:
+                    if partstat in ['TENTATIVE', 'NEEDS-ACTION']:
+                        event_dict['description'] = utils.clean_description(description, remove_links=True)
+                    else:
+                        event_dict['description'] = utils.clean_description(description)
+                else:
+                    event_dict['description'] = utils.clean_description(description)
 
 
         # ADD DATE ATTRIBUTES
