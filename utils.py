@@ -237,6 +237,12 @@ def schedule_to_ics(schedule):
                 cal_event.add('dtstart', value)
             elif key == 'end':
                 cal_event.add('dtend', value)
+            elif key == 'title':
+                cal_event.add('summary', value)
+            elif key == 'description':
+                if event.get('url') is not None:
+                    value = value + '\n\n' + event.get('url')
+                cal_event.add('description', value)
             else:
                 cal_event.add(key, value)
         cal.add_component(cal_event)
