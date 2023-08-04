@@ -78,6 +78,7 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
             continue
 
         # check whether event is cancelled
+
         if event.get('STATUS') == 'CANCELLED':
             event_dict['cancelled'] = True
         else:
