@@ -86,6 +86,7 @@
                                                             {% set ongoing = False %}
                                                         {% endif %}
 
+
                                                         {% if event.get('duration_seconds', 0) > 60*60*24 %}
                                                             {%  set long_event = True %}
                                                         {% else %}
@@ -94,7 +95,7 @@
 
 
                                                         <tr class="row-event" id = "{{ event.uid }}-{{ event_day_num }}">
-                                                            <td class="{% if ongoing %}fst-italic text-secondary{% endif %}">{% if ongoing %}(ongoing) {% endif %}{% if event.url != None %}<a class="{% if ongoing %}text-reset{% endif %} text-decoration-none fw-bold" target="_blank" href="{{ event.url }}">{{ event.title }}</a>{% else %}<span class="fw-bold">{{ event.title }}</span>{% endif %}
+                                                            <td class="{% if ongoing %}fst-italic text-secondary{% endif %}">{% if ongoing %}(ongoing) {% endif %}{% if event.url != None %}<a class="{% if ongoing %}text-reset{% endif %} text-decoration-none fw-bold" target="_blank" href="{{ event.url }}">{{ event.title }}</a>{% else %}<span class="fw-bold {% if event.get('cancelled') %}strikethrough{% endif %}">{{ event.title }}</span>{% endif %}
                                                             <div class = "row-event-info fst-italic">
                                                             {% if event.description and not ongoing %}
                                                                 {{ truncate(value_display(event.get('description')), 100) }}
