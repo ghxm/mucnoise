@@ -105,3 +105,33 @@ td.text span {
 .strikethrough {
     text-decoration: line-through;
 }
+
+.table-striped-two tr:nth-child(4n+1) td, .yourTableClass tr:nth-child(4n+2) td {
+  background: pink;
+}
+
+
+.row-no-border-bottom>td, .row-no-border-bottom>th{
+    border-bottom: none !important;
+}
+
+.row-no-border-top>td, .row-no-border-top>th {
+    border-top: none !important;
+}
+
+.row-odd {
+        background-color: none;
+}
+
+.row-even {
+    background-color: #f0f0f0;
+
+}
+
+.font-size-98 {
+    font-size: 0.98em;
+}
+
+.text-reduced {
+    color: #333333;
+}

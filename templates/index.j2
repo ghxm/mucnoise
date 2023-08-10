@@ -67,7 +67,7 @@
                                     <div class="row mb-5">
 
 
-                                                <table class="ms-3 mb-3 table-events table-fixed  table border rounded table-striped">
+                                                <table class="ms-3 mb-3 table-events table-fixed  table border rounded ">
                                                     <thead>
                                                     <tr class="row-title text-reset">
                                                         <th style="width:25%">Title</th>
@@ -78,7 +78,14 @@
                                                     </thead>
                                                     <tbody>
 
+
                                                     {% for event in schedule[year][kw][day] %}
+
+                                                        {% if loop.index % 2 == 0 %}
+                                                            {% set rowclass = 'row-odd' %}
+                                                        {% else %}
+                                                            {% set rowclass = 'row-even' %}
+                                                        {% endif %}
 
                                                         {% if event.get('event_day_num', 0) > 1 %}
                                                             {%  set ongoing = True %}
@@ -93,16 +100,17 @@
                                                             {% set long_event = False %}
                                                         {% endif %}
 
+                                                        {% if event.description and not ongoing %}
+                                                            {% set tdclass = "pb-0" %}
+                                                        {% else %}
+                                                            {% set tdclass = "" %}
+                                                        {% endif %}
 
-                                                        <tr class="row-event" id = "{{ event.uid }}-{{ event_day_num }}">
-                                                            <td class="{% if ongoing %}fst-italic text-secondary{% endif %}">{% if ongoing %}(ongoing) {% endif %}{% if event.url != None %}<a class="{% if ongoing %}text-reset{% endif %} text-decoration-none fw-bold" target="_blank" href="{{ event.url }}">{{ event.title }}</a>{% else %}<span class="fw-bold {% if event.get('cancelled') %}strikethrough{% endif %}">{{ event.title }}</span>{% endif %}
-                                                            <div class = "row-event-info fst-italic">
-                                                            {% if event.description and not ongoing %}
-                                                                {{ truncate(value_display(event.get('description')), 100) }}
-                                                            {% endif %}
-                                                            </div>
+                                                        <tr rowspan="2" class="row-event row-no-border-bottom {{ rowclass }}" id = "{{ event.uid }}-{{ event_day_num }}">
+                                                            <td class="{{ tdclass }} {% if ongoing %}fst-italic text-secondary{% endif %}">{% if ongoing %}(ongoing) {% endif %}{% if event.url != None %}<a class="{% if ongoing %}text-reset{% endif %} text-decoration-none fw-bold" target="_blank" href="{{ event.url }}">{{ event.title }}</a>{% else %}<span class="fw-bold {% if event.get('cancelled') %}strikethrough{% endif %}">{{ event.title }}</span>{% endif %}
+
                                                             </td>
-                                                            <td>
+                                                            <td class="{{ tdclass }}">
                                                             {%  if event.all_day %}
                                                                 {{ value_display(event.get('weekday_start'))[:3] }}
                                                             {%  else %}
@@ -114,7 +122,7 @@
                                                                 {% endif %}
                                                             {% endif %}
                                                             </td>
-                                                            <td>
+                                                            <td class="{{ tdclass }}">
                                                             {%  if event.all_day %}
                                                                 {{ value_display(event.get('weekday_end'))[:3] }}
                                                             {%  else %}
@@ -126,10 +134,20 @@
                                                                 {% endif %}
                                                             {% endif %}
                                                             </td>
-                                                            <td class="text text-break"><span>{{ value_display(event.get('location')) }}</span></td>
-
+                                                            <td class="{{ tdclass }} text text-break"><span>{{ value_display(event.get('location')) }}</span></td>
 
                                                         </tr>
+
+
+                                                        {% if event.description and not ongoing %}
+
+                                                        <tr class= "row-event-info {{ rowclass }}">
+                                                            <td colspan="4" class="pt-1 pt-md-0 text-reduced font-size-98">
+                                                                    {{ truncate(value_display(event.get('description')), 150) }}
+                                                            </td>
+                                                        </tr>
+
+                                                        {% endif %}
 
                                                     {% endfor %}
 
