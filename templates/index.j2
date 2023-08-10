@@ -271,14 +271,41 @@
             Create a calendar event for the show in your local calendar application and invite <code>{{ config.get('cal_email')|replace('@', '꩜') }}</code> (note: you'll need to replace the <code>꩜</code>) or write a regular e-mail. Please note that the event will be publicly visible once it is accepted.
         </p>
 
+        <p class="h4">Details</p>
+
+
+        <p>
+            The event title and location will automatically show up as the title and location on the page, respectively. When deciding on the event title, location and description, please follow these guidelines:
+        </p>
+
+        <ul>
+            <li>If the event has a title, use that as the title and include the artists or program in the description. Otherwise, use artist names. If you want to use both, you can prepend the event title and add the artists after a colon.</li>
+            <li>Use the full name of the venue but do not include the full address. If the venue is listed on the site, make sure to use the same name.</li>
+            <li>Keep the description useful and minimal (only 150 characters will be shown on the website).</li>
+        </ul>
+
         <p>
             You can specify additional information using the following keywords in the event description:
 
             <pre>
             <code>
-                url: url-to-event-website
+        url: url-to-event-website
+        Add a normal description to appear under the event here.
             </code>
             </pre>
+
+            If you would like to use a colon in your event description, make sure to wrap the url information in <code>---</code> like this:
+
+            <pre>
+            <code>
+        ---
+        url: url-to-event-website
+        ---
+        Supporting act: The band
+            </code>
+            </pre>
+
+
         </p>
 
         {% else %}
