@@ -105,11 +105,11 @@
                                                             {% set tdclass = "" %}
                                                         {% endif %}
 
-                                                        <tr rowspan="2" class="row-event {% if event.description %}row-no-border-bottom{% endif %} {{ rowclass }}" id = "{{ event.uid }}-{{ event_day_num }}">
+                                                        <tr rowspan="2" class="row-event font-size-99 font-monospace {% if event.description %}row-no-border-bottom{% endif %} {{ rowclass }}" id = "{{ event.uid }}-{{ event_day_num }}">
                                                             <td class="{{ tdclass }} {% if ongoing %}fst-italic text-secondary{% endif %}">{% if ongoing %}(ongoing) {% endif %}{% if event.url != None %}<a class="{% if ongoing %}text-reset{% endif %} text-decoration-none fw-bold" target="_blank" href="{{ event.url }}">{{ event.title }}</a>{% else %}<span class="fw-bold {% if event.get('cancelled') %}strikethrough{% endif %}">{{ event.title }}</span>{% endif %}
 
                                                             </td>
-                                                            <td class="{{ tdclass }}">
+                                                            <td class="{{ tdclass }} fst-italic  fw-medium">
                                                             {%  if event.all_day %}
                                                                 {{ value_display(event.get('weekday_start'))[:3] }}
                                                             {%  else %}
@@ -134,17 +134,17 @@
                                                                 {% endif %}
                                                             {% endif %}
                                                             </td>
-                                                            <td class="{{ tdclass }}  text-break"><span>{{ value_display(event.get('location')) }}</span></td>
+                                                            <td class="{{ tdclass }} fw-medium fw-semibold  text-break"><span>{{ value_display(event.get('location')) }}</span></td>
 
                                                         </tr>
 
 
                                                         {% if event.description and not ongoing %}
 
-                                                        <tr class= "row-event-info {{ rowclass }}">
-                                                            <td colspan="3" class="pt-1 font-monospace font-reduced font-size-95 fst-italic">
+                                                        <tr class= "row-event-info fonts-size-99  font-monospace {{ rowclass }}">
+                                                            <td colspan="3" class="pt-1 font-reduced font-size-95 ">
                                                                 <div>
-                                                                    <span class="pe-2">{{ truncate(value_display(event.get('description')), 150) }}</span>
+                                                                    <span class="fw-bold text-secondary me-2 font-size-110">></span><span class="pe-2">{{ truncate(value_display(event.get('description')), 150) }}</span>
                                                                 </div>
                                                             </td>
                                                         </tr>
