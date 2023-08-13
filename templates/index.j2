@@ -67,7 +67,9 @@
                                     <div class="row mb-5">
 
 
-                                                <table class="ms-3 mb-3 table-events table-fixed  table border rounded ">
+                                                <table class="ms-3 mb-3 mt-1 mt-lg-0 table-events table-fixed  table border rounded ">
+
+                                                <!---
                                                     <thead>
                                                     <tr class="row-title text-reset">
                                                         <th style="width:25%">Title</th>
@@ -76,6 +78,8 @@
                                                         <th style="width:20%">Location</th>
                                                     </tr>
                                                     </thead>
+
+                                                    --->
                                                     <tbody>
 
 
@@ -106,48 +110,66 @@
                                                             {% set tdclass = "" %}
                                                         {% endif %}
 
-                                                        <tr rowspan="2" class="row-event row-no-border-bottom {{ rowclass }}" id = "{{ event.uid }}-{{ event_day_num }}">
-                                                            <td class="{{ tdclass }} {% if ongoing %}fst-italic text-secondary{% endif %}">{% if ongoing %}(ongoing) {% endif %}{% if event.url != None %}<a class="{% if ongoing %}text-reset{% endif %} text-decoration-none fw-bold" target="_blank" href="{{ event.url }}">{{ event.title }}</a>{% else %}<span class="fw-bold {% if event.get('cancelled') %}strikethrough{% endif %}">{{ event.title }}</span>{% endif %}
+
+                                                        <tr class= "row-event-info row-no-border-bottom {{ rowclass }}">
+
+                                                            <td colspan="3" class="pb-0 {% if ongoing %}fst-italic text-secondary{% endif %}">{% if ongoing %}(ongoing) {% endif %}{% if event.url != None %}<a class="{% if ongoing %}text-reset{% endif %} text-decoration-none fw-bold" target="_blank" href="{{ event.url }}">{{ event.title }}</a>{% else %}<span class="fw-bold {% if event.get('cancelled') %}strikethrough{% endif %}">{{ event.title }}</span>{% endif %}
+
 
                                                             </td>
-                                                            <td class="{{ tdclass }}">
-                                                            {%  if event.all_day %}
-                                                                {{ value_display(event.get('weekday_start'))[:3] }}
-                                                            {%  else %}
-                                                                {%  if event.start_datetime != None %}
-                                                                    {{ event.start_datetime.strftime('%H:%M') }}
-                                                                {% endif %}
-                                                                {%  if ongoing and not event.get('all_day', False) %}
-                                                                    ({{ value_display(event.get('weekday_start'))[:3] }})
-                                                                {% endif %}
-                                                            {% endif %}
-                                                            </td>
-                                                            <td class="{{ tdclass }}">
-                                                            {%  if event.all_day %}
-                                                                {{ value_display(event.get('weekday_end'))[:3] }}
-                                                            {%  else %}
-                                                                {%  if event.end_datetime != None %}
-                                                                    {{ event.end_datetime.strftime('%H:%M') }}
-                                                                {% endif %}
-                                                                {%  if event.multi_day and event.weekday_end != None %}
-                                                                    ({{ value_display(event.get('weekday_end'))[:3] }})
-                                                                {% endif %}
-                                                            {% endif %}
-                                                            </td>
-                                                            <td class="{{ tdclass }} text text-break"><span>{{ value_display(event.get('location')) }}</span></td>
-
                                                         </tr>
 
 
+                                                        <tr class="row-event  {% if event.description %}row-no-border-bottom{% endif %} font-size-98 {{ rowclass }}" id = "{{ event.uid }}-{{ event_day_num }}">
+
+                                                            <td colspan="3" class="{{ tdclass }} pt-0">
+                                                                <span class="me-2 me-lg-3 fst-italic float-start">
+
+                                                                {%  if event.all_day %}
+                                                                    {{ value_display(event.get('weekday_start')) }}
+                                                                {%  else %}
+                                                                    {%  if event.start_datetime != None %}
+                                                                        {{ event.start_datetime.strftime('%H:%M') }}
+                                                                    {% endif %}
+                                                                    {%  if ongoing and not event.get('all_day', False) %}
+                                                                        ({{ value_display(event.get('weekday_start'))[:3] }})
+                                                                    {% endif %}
+                                                                {% endif %}
+                                                                {%  if not event.all_day  %}
+                                                                &mdash;
+                                                                    {%  if event.all_day %}
+                                                                        {{ value_display(event.get('weekday_end'))[:3] }}
+                                                                    {%  else %}
+                                                                        {%  if event.end_datetime != None %}
+                                                                            {{ event.end_datetime.strftime('%H:%M') }}
+                                                                        {% endif %}
+                                                                        {%  if event.multi_day and event.weekday_end != None %}
+                                                                            ({{ value_display(event.get('weekday_end'))[:3] }})
+                                                                        {% endif %}
+                                                                    {% endif %}
+                                                                {% endif %}
+                                                                </span>
+                                                                <span class="float-end float-lg-start w-50  fw-bold text-secondary">
+                                                                    {{ value_display(event.get('location')) }}
+                                                                </span>
+                                                            </td>
+
+                                                        </tr>
+
                                                         {% if event.description and not ongoing %}
 
-                                                        <tr class= "row-event-info {{ rowclass }}">
-                                                            <td colspan="4" class="pt-1 pt-md-0 text-reduced font-size-98">
-                                                                    {{ truncate(value_display(event.get('description')), 150) }}
+
+                                                        <tr class= "row-event-description fst-italic {{ rowclass }}">
+
+                                                            <td colspan="3" class="pt-0">
+                                                                    <p class="event-description pt-1 mb-0">{{ truncate(value_display(event.get('description')), 150) }}</p>
+
                                                             </td>
                                                         </tr>
 
                                                         {% endif %}
+
+
 
                                                     {% endfor %}
 
