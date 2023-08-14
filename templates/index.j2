@@ -70,8 +70,8 @@
                                                 <table class="ms-3 mb-3 table-events table-fixed  table border rounded ">
                                                     <thead>
                                                     <tr class="row-title text-reset">
-                                                        <th style="width:45%">Title</th>
-                                                        <th style="width:15%">Time</th>
+                                                        <th style="width:42%">Title</th>
+                                                        <th style="width:18%">Time</th>
                                                         <th style="width:30%">Location</th>
                                                     </tr>
                                                     </thead>
@@ -109,7 +109,7 @@
                                                             <td class="{{ tdclass }} {% if ongoing %}fst-italic text-secondary{% endif %}">{% if ongoing %}(ongoing) {% endif %}{% if event.url != None %}<a class="{% if ongoing %}text-reset{% endif %} text-decoration-none fw-bold" target="_blank" href="{{ event.url }}">{{ event.title }}</a>{% else %}<span class="fw-bold {% if event.get('cancelled') %}strikethrough{% endif %}">{{ event.title }}</span>{% endif %}
 
                                                             </td>
-                                                            <td class="{{ tdclass }} fst-italic  fw-medium">
+                                                            <td class="{{ tdclass }} fst-italic font-size-99 fw-medium">
                                                             {%  if event.all_day %}
                                                                 {{ value_display(event.get('weekday_start'))[:3] }}
                                                             {%  else %}
@@ -134,7 +134,7 @@
                                                                 {% endif %}
                                                             {% endif %}
                                                             </td>
-                                                            <td class="{{ tdclass }} fw-medium fw-semibold  text-break"><span>{{ value_display(event.get('location')) }}</span></td>
+                                                            <td class="{{ tdclass }} fw-medium fw-semibold font-size-99 text-break"><span>{{ value_display(event.get('location')) }}</span></td>
 
                                                         </tr>
 
