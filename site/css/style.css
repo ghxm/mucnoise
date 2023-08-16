@@ -115,6 +115,14 @@ td.text span {
     border-bottom: none !important;
 }
 
+.row-no-border-left>td, .row-no-border-left>th{
+    border-left: none !important;
+}
+
+.row-no-border-right>td, .row-no-border-right>th{
+    border-right: none !important;
+}
+
 .row-no-border-top>td, .row-no-border-top>th {
     border-top: none !important;
 }
@@ -146,4 +154,15 @@ td.text span {
 
 .text-reduced {
     color: #838383;
+}
+
+.event-location {
+    /*color: #5e5414;*/
+}
+
+.title {
+  background-color: transparent !important;
+  border-color: black !important;
+  color: #333333 !important;
+
 }
