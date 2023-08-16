@@ -156,6 +156,10 @@ td.text span {
     color: #838383;
 }
 
+.text-grey {
+    color: darkgray !important;
+}
+
 .event-location {
     /*color: #5e5414;*/
 }
