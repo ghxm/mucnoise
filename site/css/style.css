@@ -170,3 +170,36 @@ td.text span {
   color: #333333 !important;
 
 }
+
+
+.border-dotted {
+    border-style: dotted !important;
+    border-width: 0.8px;
+
+}
+
+.border-dashed {
+    border-style: dashed !important;
+    border-width: 0.8px;
+
+}
+
+.border-grey {
+    border-color: darkgray !important;
+}
+
+.no-border-left {
+    border-left: none !important;
+}
+
+.no-border-right {
+    border-right: none !important;
+}
+
+.no-border-top {
+    border-top: none !important;
+}
+
+.no-border-bottom {
+    border-bottom: none !important;
+}

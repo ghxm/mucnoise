@@ -75,7 +75,7 @@
                                                         <th style="width:28%"><span class="font-size-95">Location</span></th>
                                                     </tr>
                                                     </thead>
-                                                    <tbody>
+                                                    <tbody class="">
 
 
                                                     {% for event in schedule[year][kw][day] %}
@@ -141,10 +141,10 @@
 
                                                         {% if event.description and not ongoing %}
 
-                                                        <tr class= "row-event-info fonts-size-99  font-monospace {{ rowclass }}">
+                                                        <tr class= "row-event-info fonts-size-99  font-monospace  {{ rowclass }}">
                                                             <td colspan="3" class="pt-1 font-reduced font-size-95 ">
-                                                                <div>
-                                                                    <span class="fw-bold text-secondary me-2 font-size-110">></span><span class="pe-2">{{ truncate(value_display(event.get('description')), 150) }}</span>
+                                                                <div class="px-1">
+                                                                    <span class="fw-bold text-secondary me-2 font-size-110">></span><span class="pe-2 ">{{ truncate(value_display(event.get('description')), 150) }}</span>
                                                                 </div>
                                                             </td>
                                                         </tr>
