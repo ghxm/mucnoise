@@ -70,9 +70,9 @@
                                                 <table class="ms-3 mb-3 table-events table-fixed  table border rounded ">
                                                     <thead>
                                                     <tr class="row-title text-reset">
-                                                        <th style="width:42%">Title</th>
-                                                        <th style="width:18%">Time</th>
-                                                        <th style="width:30%">Location</th>
+                                                        <th style="width:42%"><span class="badge border border-dark text-dark rounded-pill">Title</span></th>
+                                                        <th style="width:18%"><span class="badge border border-dark text-dark rounded-pill">Time</span></th>
+                                                        <th style="width:30%"><span class="badge border border-dark text-dark rounded-pill">Location</span></th>
                                                     </tr>
                                                     </thead>
                                                     <tbody>
@@ -134,7 +134,7 @@
                                                                 {% endif %}
                                                             {% endif %}
                                                             </td>
-                                                            <td class="{{ tdclass }} fw-medium fw-semibold font-size-99 text-break"><span>{{ value_display(event.get('location')) }}</span></td>
+                                                            <td class="{{ tdclass }} fw-medium fw-semibold font-size-99 text-break event-location"><span>{{ value_display(event.get('location')) }}</span></td>
 
                                                         </tr>
 
