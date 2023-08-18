@@ -430,19 +430,29 @@ def get_today(return_date_obj = False, tz =get_config().get('timezone')):
 
         return datetime.now(tz).date().strftime('%Y-%m-%d')
 
-def remove_past_events(schedule, cutoff_date=get_today(return_date_obj=True)):
+def remove_events(schedule, cutoff_date=get_today(return_date_obj=True), remove='past'):
 
+    assert remove in ['past', 'future'], 'remove must be either "past" or "future"'
 
     if isinstance(cutoff_date, datetime):
-        # keep events that end before cutoff datetime or start on the same day
-        schedule = [event for event in schedule if ensure_tz(datetime.fromisoformat(event['end'])) >= cutoff_date or ensure_tz(datetime.fromisoformat(event['start'])).date() == cutoff_date.date()]
 
+        if remove == 'past':
+            # keep events that end before cutoff datetime or start on the same day
+            schedule = [event for event in schedule if ensure_tz(datetime.fromisoformat(event['end'])) >= cutoff_date or ensure_tz(datetime.fromisoformat(event['start'])).date() == cutoff_date.date()]
+        elif remove == 'future':
+            schedule = [event for event in schedule if ensure_tz(datetime.fromisoformat(event['start'])) < cutoff_date]
 
     elif isinstance(cutoff_date, date):
-        # keep events that end on cutoff date
 
-        schedule = [event for event in schedule if make_date(datetime.fromisoformat(event['end']), get_config().get('timezone', 'Europe/Berlin')) >= cutoff_date if
-                    event['end'] != '' and event['end'] is not None]
+        if remove == 'past':
+            # keep events that end on cutoff date
+            schedule = [event for event in schedule if make_date(datetime.fromisoformat(event['end']), get_config().get('timezone', 'Europe/Berlin')) >= cutoff_date if
+                        event['end'] != '' and event['end'] is not None]
+        elif remove == 'future':
+            # remove events that start on or after cutoff date
+            schedule = [event for event in schedule if make_date(datetime.fromisoformat(event['start']), get_config().get('timezone', 'Europe/Berlin')) < cutoff_date
+                        if event['start'] != '' and event['start'] is not None]
+
 
 
     return schedule

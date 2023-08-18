@@ -26,62 +26,92 @@ schedule_str = open(schedule_path, 'r').read()
 
 schedule = json.loads(schedule_str)
 
+# copy list to archive schedule
+archive_schedule = schedule.copy()
 
-schedule = utils.remove_past_events(schedule, cutoff_date=utils.ensure_tz(datetime.now(), tz=config.get('timezone')) + timedelta(hours=2))
+archive_schedule = utils.remove_events(archive_schedule, cutoff_date=utils.ensure_tz(datetime.now(), tz=config.get('timezone')), remove='future')
+schedule = utils.remove_events(schedule, cutoff_date=utils.ensure_tz(datetime.now(), tz=config.get('timezone')) + timedelta(hours=2), remove='past')
 
-# if an event is longer than 24h add it for each day
-schedule_modified = []
+schedules = {'schedule': schedule, 'archive_schedule': archive_schedule}
+date_weekdays = {'schedule': {}, 'archive_schedule': {}} # dict to store weekdays for each schedule
 
-for event in schedule:
-    if event['duration_seconds'] > 60*60*24:
+for schedule_name, schedule_ in schedules.items():
 
-        # get days
-        if event['all_day']:
-            days = [d for d in utils.daterange(utils.make_datetime(event['start']), utils.make_datetime(event['end']))]
+    # if an event is longer than 24h add it for each day
+    schedule_modified = []
+
+    for event in schedule_:
+        if event['duration_seconds'] > 60*60*24:
+
+            # get days
+            if event['all_day']:
+                days = [d for d in utils.daterange(utils.make_datetime(event['start']), utils.make_datetime(event['end']))]
+            else:
+                days = [d for d in utils.daterange(datetime.fromisoformat(event['start']), datetime.fromisoformat(event['end']))]
+
+            for i, day in enumerate(days):
+                event_copy = event.copy()
+                event_copy['event_day_num'] = i+1
+                event_copy['date'] = utils.ymd_string(day)
+                event_copy['kw'] = utils.get_weeknum(day)
+                schedule_modified.append(event_copy)
         else:
-            days = [d for d in utils.daterange(datetime.fromisoformat(event['start']), datetime.fromisoformat(event['end']))]
+            event['event_day_num'] = 1
+            schedule_modified.append(event)
 
-        for i, day in enumerate(days):
-            event_copy = event.copy()
-            event_copy['event_day_num'] = i+1
-            event_copy['date'] = utils.ymd_string(day)
-            event_copy['kw'] = utils.get_weeknum(day)
-            schedule_modified.append(event_copy)
+    schedule_ = schedule_modified
+
+    # aggregate schedule by day
+    schedule_ = utils.aggregate_schedule(schedule_, groups=['year', 'kw', 'date'])
+
+    # make start_datetime and end_datetime into datetime objects
+    for year in schedule_.keys():
+        for kw in schedule_[year].keys():
+            for date in schedule_[year][kw].keys():
+                for event in schedule_[year][kw][date]:
+                    event['date_datetime'] = utils.make_date(event['date'], config.get('timezone')) if event['date'] is not None else None
+                    event['start_datetime'] = utils.ensure_tz(datetime.fromisoformat(event['start']), config.get('timezone')) if event['start'] is not None else None
+                    event['end_datetime'] = utils.ensure_tz(datetime.fromisoformat(event['end']), config.get('timezone')) if event['end'] is not None else None
+
+    # get a dict of date-weekdays
+    ## get all dates
+    dates = []
+    for year in schedule_.keys():
+        for kw in schedule_[year].keys():
+            for date in schedule_[year][kw].keys():
+                dates.append(date)
+
+    date_weekdays[schedule_name] =  {date: utils.get_weekday(utils.make_date(date, tz=config.get('timezone'))) for date in dates}
+
+
+    # sorting
+    if schedule_name == 'archive_schedule':
+        # sort years in reverse
+        schedule_ = {year: schedule_[year] for year in sorted(schedule_.keys(), reverse=True)}
+        # sort kw in reverse
+        for year in schedule_.keys():
+            schedule_[year] = {kw: schedule_[year][kw] for kw in sorted(schedule_[year].keys(), reverse=True)}
+        # sort dates in reverse
+        for year in schedule_.keys():
+            for kw in schedule_[year].keys():
+                schedule_[year][kw] = {date: schedule_[year][kw][date] for date in sorted(schedule_[year][kw].keys(), reverse=True)}
+
+        # sort events by start_datetime in reverse
+        for year in schedule_.keys():
+            for kw in schedule_[year].keys():
+                for date in schedule_[year][kw].keys():
+                    schedule_[year][kw][date] = sorted(schedule_[year][kw][date], key=lambda x: x['start_datetime'], reverse=True)
     else:
-        event['event_day_num'] = 1
-        schedule_modified.append(event)
 
-schedule = schedule_modified
+        # sort by start_datetime
+        for year in schedule_.keys():
+            for kw in schedule_[year].keys():
+                for date in schedule_[year][kw].keys():
+                    schedule_[year][kw][date] = sorted(schedule_[year][kw][date], key=lambda x: x['start_datetime'])
 
+    # add back to dict
+    schedules[schedule_name] = schedule_
 
-# aggregate schedule by day
-schedule = utils.aggregate_schedule(schedule, groups=['year','kw','date'])
-
-# make start_datetime and end_datetime into datetime objects
-for year in schedule.keys():
-    for kw in schedule[year].keys():
-        for date in schedule[year][kw].keys():
-            for event in schedule[year][kw][date]:
-                event['date_datetime'] = utils.make_date(event['date'], config.get('timezone')) if event['date'] is not None else None
-                event['start_datetime'] = utils.ensure_tz(datetime.fromisoformat(event['start']), config.get('timezone')) if event['start'] is not None else None
-                event['end_datetime'] = utils.ensure_tz(datetime.fromisoformat(event['end']), config.get('timezone')) if event['end'] is not None else None
-
-# get a dict of date-weekdays
-## get all dates
-dates = []
-for year in schedule.keys():
-    for kw in schedule[year].keys():
-        for date in schedule[year][kw].keys():
-            dates.append(date)
-
-
-date_weekdays = {date: utils.get_weekday(utils.make_date(date, tz=config.get('timezone'))) for date in dates}
-
-# sort by start_datetime
-for year in schedule.keys():
-    for kw in schedule[year].keys():
-        for date in schedule[year][kw].keys():
-            schedule[year][kw][date] = sorted(schedule[year][kw][date], key=lambda x: x['start_datetime'])
 
 
 # copy files from data to site/static/
@@ -125,21 +155,39 @@ venues = sorted(venues, key=lambda x: x['id'])
 
 # MAKE SITE
 
-# @TODO replace individual variables with config dict
-
-# Write the rendered template to a file
-with open('site/index.html', 'w') as f:
+# Create archive
+with open('site/archive.html', 'w') as f:
     f.write(template.render(config = config,
-                            schedule=schedule,
+                            schedule=schedules['archive_schedule'],
                             venues=venues,
-                            date_weekdays=date_weekdays,
+                            date_weekdays=date_weekdays['archive_schedule'],
                             today = utils.get_today(),
                             today_datetime = utils.get_today(return_date_obj=True),
                             now = datetime.now(pytz.timezone(config.get('timezone'))),
                             path_exists = lambda x: os.path.exists(x),
                             truncate = lambda x, n: x[:n] + '...' if len(x) > n else x,
                             value_display = lambda x: x if x is not None else '',
-                            dict_has_key = utils.dict_has_key
+                            dict_has_key = utils.dict_has_key,
+                            archive = True
                             )
                             )
+
+# Write the rendered template to a file
+with open('site/index.html', 'w') as f:
+    f.write(template.render(config = config,
+                            schedule=schedules['schedule'],
+                            venues=venues,
+                            date_weekdays=date_weekdays['schedule'],
+                            today = utils.get_today(),
+                            today_datetime = utils.get_today(return_date_obj=True),
+                            now = datetime.now(pytz.timezone(config.get('timezone'))),
+                            path_exists = lambda x: os.path.exists(x),
+                            truncate = lambda x, n: x[:n] + '...' if len(x) > n else x,
+                            value_display = lambda x: x if x is not None else '',
+                            dict_has_key = utils.dict_has_key,
+                            archive = False
+                            )
+                            )
+
+
 
