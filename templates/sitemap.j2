@@ -3,7 +3,8 @@
   {% for page in pages %}
   <url>
     <loc>{{ config.get('site_url') }}/{{ page }}</loc>
-    <lastmod>{{  now.strftime('%Y-%m-%dT%H:%M%z') }}</lastmod>
+    <lastmod>{{  now.strftime('%Y-%m-%dT%H:%M%z')[:-2] }}00</lastmod>
+    <changefreq>hourly</changefreq>
   </url>
   {% endfor %}
 </urlset>
