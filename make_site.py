@@ -19,6 +19,7 @@ env = jinja2.Environment(loader=jinja2.FileSystemLoader('templates'), extensions
 
 # Load a template
 template = env.get_template('index.j2')
+sitemap_template = env.get_template('sitemap.j2')
 
 
 # read in schedule
@@ -190,4 +191,9 @@ with open('site/index.html', 'w') as f:
                             )
 
 
-
+# generate sitemap
+with open('site/sitemap.xml', 'w') as f:
+    f.write(sitemap_template.render(config = config,
+                                    pages = ['', 'archive'],
+                                    now = datetime.now(pytz.timezone(config.get('timezone')))
+                                    ))
