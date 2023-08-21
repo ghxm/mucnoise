@@ -27,8 +27,8 @@
         {%  if archive %}
                         <a href="{{ config.get('site_url') }}" class="btn me-2 btn-outline-primary btn-sm"><< upcoming</a>
         {% endif %}
-        {% if not archive and path_exists('site/archive') %}
-                <a href="archive.html" class="btn me-2 btn-outline-primary btn-sm">archive >></a>
+        {% if not archive and path_exists('site/archive.html') %}
+                <a href="archive" class="btn me-2 btn-outline-primary btn-sm">archive >></a>
         {% endif %}
             <a href="#venues" class="btn me-2 btn-outline-primary btn-sm">venues</a>
             <a href="#info" class="btn me-2 btn-outline-primary btn-sm">info</a>
