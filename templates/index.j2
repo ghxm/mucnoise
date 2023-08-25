@@ -1,3 +1,7 @@
+
+{% set VARS = namespace(last_printed_date=None) %}
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,6 +35,9 @@
                 <a href="archive" class="btn me-2 btn-outline-primary btn-sm">archive >></a>
         {% endif %}
             <a href="#venues" class="btn me-2 btn-outline-primary btn-sm">venues</a>
+            {% if news and news|length > 0 %}
+                <a href="#news" class="btn me-2 btn-outline-primary btn-sm">news</a>
+            {% endif %}
             <a href="#info" class="btn me-2 btn-outline-primary btn-sm">info</a>
             {%  if path_exists('site/static/events.ics') %}
                     <a  href="static/events.ics" class="btn me-2 btn-outline-secondary btn-sm d-none d-md-block">.ics</a>
@@ -53,6 +60,8 @@
             </div>
         </div>
     {% endif %}
+
+
 
         {% for year in schedule.keys() %}
 
@@ -258,6 +267,58 @@
 </div>
 
 
+{% if news|length >0 %}
+<div class = "row mb-2" id="news">
+<p class="h5">News</p>
+
+
+
+<div class="col-12 col-xl-1 h5 pe-0"></div> <!---- Spacer ----->
+
+<div class="col-12 col-xl-11">
+
+    <!---<summary class="fw-semibold font-size-95 mb-2">show / hide</summary>--->
+
+
+    {% for news_item in news %}
+
+        <div class="row" id="news-date-{{  news_item.get('date') }}">
+
+            <div class="col-12 col-lg-2" >
+                {% if VARS.last_printed_date != news_item.get('date') %}
+                <p class="h6 text-nowrap ">{% if day==today %}<span>Today</span>{% else %}{{ news_item['weekday'][:3] }}{% endif %}, {{ news_item.get('date') }}</p>
+                {% endif %}
+            </div>
+
+            {% set VARS.last_printed_date = news_item.get('date') %}
+
+
+            <div class="ps-0 ps-lg-4 col-12 col-lg-10">
+
+                <div class="row px-3 px-lg-1 mb-0 news-item {% if news_item.get('sticky') %}news-item-sticky{% endif %}">
+
+                    {% if news_item.get('title') %}
+                        <div class="news-title"><p class="fw-semibold mb-1">{{ news_item.title }}</p></div>
+                    {% endif %}
+
+                    <div class="news-content">{{ news_item.content }}</div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    {% endfor %}
+
+
+</div>
+
+</div>
+
+{% endif %}
+
+
 <div id="info" class="row me-xl-1">
 
 
@@ -268,7 +329,7 @@
 
     </div>
 
-    <div id = "about" class="col-lg">
+    <div id = "about" class="col-lg ps-lg-0 ms-lg-0">
 
             <p class="h3">About</p>
 
