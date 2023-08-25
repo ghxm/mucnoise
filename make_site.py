@@ -7,7 +7,7 @@ import pytz
 import shutil
 import warnings
 import yaml
-
+import markdown
 
 config = utils.get_config(get_all=True)
 
@@ -124,6 +124,58 @@ for f in data:
     shutil.copyfile(utils.path_to_data_folder(f), os.path.join(static_folder, f))
 
 
+
+# NEWS
+
+# read in news
+news_path = utils.path_to_data_folder('news/')
+
+news_paths = [os.path.join(news_path, f) for f in os.listdir(news_path) if f.endswith('.md') and not f.startswith('_')]
+
+news = []
+
+for news_path in news_paths:
+
+    # read in file
+    news_str = open(news_path, 'r').read()
+
+    # parse yaml
+    news_, content = [y for y in yaml.safe_load_all(news_str)]
+
+    news_['id'] = news_path.split('/')[-1].replace('.md','')
+
+    news_['weekday'] = utils.get_weekday(utils.make_date(news_.get('date'), config.get('timezone'))) if news_.get('date') else None
+
+
+    # parse markdown
+    news_['content'] = markdown.markdown(content, extensions=['markdown.extensions.meta', 'markdown.extensions.fenced_code', 'markdown.extensions.codehilite', 'markdown.extensions.toc'])
+
+    # add to list
+    news.append(news_)
+
+# sort by id
+news = sorted(news, key=lambda x: x['id'], reverse=True)
+
+# put sticky news first
+news = sorted(news, key=lambda x: x['sticky'], reverse=True)
+
+news_current = []
+news_archive = []
+
+for news_ in news:
+
+    if news_.get('from') and utils.make_date(news_.get('from'), config.get('timezone')) < datetime.now(pytz.timezone(config.get('timezone'))).date():
+        continue
+
+    if (news_.get('to') and utils.make_date(news_.get('to'), config.get('timezone')) < datetime.now(pytz.timezone(config.get('timezone'))).date()) or \
+        (not news_.get('sticky') and news_.get('date') and utils.make_date(news_.get('date'), config.get('timezone')) > datetime.now(pytz.timezone(config.get('timezone'))).date() + timedelta(days=10)):
+        news_archive.append(news_)
+    else:
+        news_current.append(news_)
+
+
+
+
 # VENUES
 
 # read in venues
@@ -160,6 +212,7 @@ venues = sorted(venues, key=lambda x: x['id'])
 with open('site/archive.html', 'w') as f:
     f.write(template.render(config = config,
                             schedule=schedules['archive_schedule'],
+                            news = news_archive,
                             venues=venues,
                             date_weekdays=date_weekdays['archive_schedule'],
                             today = utils.get_today(),
@@ -177,6 +230,7 @@ with open('site/archive.html', 'w') as f:
 with open('site/index.html', 'w') as f:
     f.write(template.render(config = config,
                             schedule=schedules['schedule'],
+                            news = news_current,
                             venues=venues,
                             date_weekdays=date_weekdays['schedule'],
                             today = utils.get_today(),
