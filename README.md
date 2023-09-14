@@ -86,8 +86,10 @@ url: The URL of the venue
 
 Note: Files starting with an underscore (`_`) are ignored.
 
-Examples can be found in [the `venues` folder of the `github-pages` deployment branch](/../github-pages/veneus).
+Examples can be found in [the `venues` folder of the `github-pages` deployment branch](../github-pages/data/venues).
 
 
 
+## News
 
+Similar to the venues, you can also display a list of small news articles / announcements. Examples can also be found in the [`github-pages` deployment branch](../github-pages/data/news).
