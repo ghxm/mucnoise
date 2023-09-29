@@ -243,6 +243,9 @@ def schedule_to_ics(schedule):
                 if event.get('url') is not None:
                     value = value + '\n\n' + event.get('url')
                 cal_event.add('description', value)
+            elif key == 'cancelled':
+                if value:
+                    cal_event.add('status', 'CANCELLED')
             else:
                 cal_event.add(key, value)
         cal.add_component(cal_event)
