@@ -233,17 +233,17 @@ def schedule_to_ics(schedule):
     for event in schedule:
         cal_event = icalendar.Event()
         for key, value in event.items():
-            if key == 'start':
+            if key.lower() == 'start':
                 cal_event.add('dtstart', value)
-            elif key == 'end':
+            elif key.lower() == 'end':
                 cal_event.add('dtend', value)
-            elif key == 'title':
+            elif key.lower() == 'title':
                 cal_event.add('summary', value)
-            elif key == 'description':
+            elif key.lower() == 'description':
                 if event.get('url') is not None:
                     value = value + '\n\n' + event.get('url')
                 cal_event.add('description', value)
-            elif key == 'cancelled':
+            elif key.lower() == 'cancelled':
                 if value:
                     cal_event.add('status', 'CANCELLED')
             else:
