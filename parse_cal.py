@@ -182,7 +182,10 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
             event_dict['location'] = None
 
         if event_dict['location'] is not None:
-            event_dict['location'] = event_dict['location'].split('\n')[0]
+            if '\n' in event_dict['location']:
+                event_dict['location'] = event_dict['location'].split('\n')[0]
+            elif ',' in event_dict['location']:
+                event_dict['location'] = event_dict['location'].split(',')[0]
 
         # get title from event if set
         try:
@@ -190,7 +193,7 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
         except:
             event_dict['title'] = None
 
-        if 'grant' in event_dict['title'].lower():
+        if 'paar' in event_dict['title'].lower():
             print('')
 
 
@@ -209,6 +212,9 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
 
 
             yaml_dict = None
+
+            # clean from html
+            event_dict['description'] = utils.clean_description(event_dict['description'])
 
             # try to parse yaml from description
             yaml_desc, description = utils.split_yaml_text(event_dict['description'])
@@ -236,6 +242,9 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
                         event_dict['description'] = description
                 else:
                     event_dict['description'] = description
+
+                # remove leading <br> tags
+                event_dict['description'] = re.sub(r'^\s*(<.{0,1}br>[\s]*)+', '', event_dict['description'])
 
 
         # ADD DATE ATTRIBUTES
