@@ -193,9 +193,6 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
         except:
             event_dict['title'] = None
 
-        if 'paar' in event_dict['title'].lower():
-            print('')
-
 
         # get description from event if set
         try:
