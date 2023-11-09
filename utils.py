@@ -148,16 +148,35 @@ def fix_html(text):
 
     return text
 
+
+def clean_yaml_str(text):
+
+        # remove html tags
+        text = remove_html_tags(text)
+
+        # remove leading and trailing spaces
+        text = text.strip()
+
+        # remove leading and trailing newlines in front of ---
+        text = re.sub(r'\s*---', '\n---', text)
+
+        # remove leading and trailing spaces in front of entries
+        text = re.sub(r'\n\s+', '\n', text)
+
+        return text
+
 def split_yaml_text(text):
 
     # try to identify the yaml part
 
     # easy (with ---)
-    yaml_match = re.search(r'^---\n.*\n---\n', text, flags=re.MULTILINE | re.DOTALL)
+    yaml_match = re.search(r'^\s*---\s+.*[\s]+---\s*', text, flags=re.MULTILINE | re.DOTALL)
 
     if yaml_match:
         yaml_str = yaml_match.group(0)
         text = text.replace(yaml_str, '')
+
+        yaml_str = clean_yaml_str(yaml_str)
 
         # try to parse the yaml to exclude yases where --- might have been added for fun
         try:
@@ -179,6 +198,11 @@ def split_yaml_text(text):
 
     return yaml_str, text
 
+def remove_html_tags(text):
+    """Remove html tags from a string"""
+    clean = re.compile('<.*?>')
+    return re.sub(clean, '', text)
+
 def clean_description(text):
 
     description = text
@@ -197,6 +221,19 @@ def clean_description(text):
     description = re.sub('Teilnehmen.*', '', description, flags=re.IGNORECASE | re.MULTILINE | re.DOTALL)
     description = re.sub('This event contains.*', '', description, flags=re.IGNORECASE | re.MULTILINE | re.DOTALL)
     description = re.sub('This event has.*', '', description, flags=re.IGNORECASE | re.MULTILINE | re.DOTALL)
+
+    # check if yaml part is present
+    if re.search(r'---.*---', description):
+        yaml_part = re.search(r'---.*---', description).group(0)
+        description = description.replace(yaml_part, '')
+
+        yaml_part = re.sub('<.{0,1}br>', '\n\n', yaml_part, flags=re.IGNORECASE)
+
+        # remove html tags
+        yaml_part = remove_html_tags(yaml_part)
+
+        description = yaml_part + '\n\n' + description
+
 
     return description
 
