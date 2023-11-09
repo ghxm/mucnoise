@@ -86,7 +86,12 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
 
         try:
 
-            partstat = [a for a in event.get('attendee') if a.params.get('CN', '') == str(site_owner_email)][0].params.get('PARTSTAT')
+            site_owner_re = re.compile(r'(mailto:)?' + str(site_owner_email), flags=re.IGNORECASE)
+
+            partstat = [a for a in event.get('attendee') if site_owner_re.search(a.params.get('CN', ''))][0].params.get('PARTSTAT') \
+                if isinstance(event.get('attendee'), list) else event.get('attendee').params.get('PARTSTAT') \
+                if event.get('attendee') is not None and site_owner_re.search(event.get('attendee')) \
+                else None
 
         except:
 
@@ -184,6 +189,9 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
             event_dict['title'] = event.get('SUMMARY')
         except:
             event_dict['title'] = None
+
+        if 'grant' in event_dict['title'].lower():
+            print('')
 
 
         # get description from event if set
