@@ -157,7 +157,7 @@ for news_path in news_paths:
 news = sorted(news, key=lambda x: x['id'], reverse=True)
 
 # put sticky news first
-news = sorted(news, key=lambda x: x['sticky'], reverse=True)
+news = sorted(news, key=lambda x: x['sticky'] if x['sticky'] else False, reverse=True)
 
 news_current = []
 news_archive = []
