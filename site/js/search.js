@@ -67,8 +67,8 @@ document.addEventListener('DOMContentLoaded', function() {
         for (i = 0; i < dayWeekContainers.length; i++) {
             var dayWeekContainer = dayWeekContainers[i];
             var visibleEvents = dayWeekContainer.querySelectorAll('.row-event:not([style*="display: none"])');
-            console.log(dayWeekContainer.id)
-            console.log(visibleEvents.length);
+            //console.log(dayWeekContainer.id)
+            //console.log(visibleEvents.length);
             dayWeekContainer.style.display = visibleEvents.length > 0 ? '' : 'none';
         }
     }
@@ -91,6 +91,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // show / hide the search bar
         if (searchPlaceholder.classList.contains('d-none')) {
             searchPlaceholder.classList.remove('d-none');
+            // increase font size
+
+            searchInput.style.fontSize = '16px'; // Set to the default size to prevent zoom
+
+    searchInput.addEventListener('blur', function() {
+        this.style.fontSize = ''; // Reset to the original size
+    });
             searchInput.focus();
             // make the button look pressed
             searchButton.classList.add('active');
@@ -102,10 +109,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-
-    searchInput.addEventListener('focus', function() {
-        this.style.fontSize = '16px'; // Set to the default size to prevent zoom
-    });
 
     searchInput.addEventListener('blur', function() {
         this.style.fontSize = ''; // Reset to the original size
