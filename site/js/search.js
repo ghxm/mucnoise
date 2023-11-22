@@ -102,4 +102,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+
+    searchInput.addEventListener('focus', function() {
+        this.style.fontSize = '16px'; // Set to the default size to prevent zoom
+    });
+
+    searchInput.addEventListener('blur', function() {
+        this.style.fontSize = ''; // Reset to the original size
+    });
+
 });
