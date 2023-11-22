@@ -344,8 +344,9 @@
             <p class="h3">About</p>
 
             <p>
-                This is an overview of events subject to personal taste, inspired by <a target="_blank"  href="https://www.nyc-noise.com">nyc-noise.com</a>, with a focus on more off-kilter and left-field music-related selections in the Munich area.
+                This is an overview of events subject to personal taste, inspired by <a target="_blank"  href="https://www.nyc-noise.com">nyc-noise.com</a>, with a focus on more off-kilter and left-field music-related selections.
             </p>
+
 
     </div>
 
@@ -442,6 +443,35 @@
     };
 document.addEventListener("copy", copyListener);
 
+</script>
+
+<script>
+    // prevent focus zoom on ios
+    const addMaximumScaleToMetaViewport = () => {
+      const el = document.querySelector('meta[name=viewport]');
+
+      if (el !== null) {
+        let content = el.getAttribute('content');
+        let re = /maximum\-scale=[0-9\.]+/g;
+
+        if (re.test(content)) {
+            content = content.replace(re, 'maximum-scale=1.0');
+        } else {
+            content = [content, 'maximum-scale=1.0'].join(', ')
+        }
+
+        el.setAttribute('content', content);
+      }
+    };
+
+    const disableIosTextFieldZoom = addMaximumScaleToMetaViewport;
+
+    // https://stackoverflow.com/questions/9038625/detect-if-device-is-ios/9039885#9039885
+    const checkIsIOS = () =>
+      /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+    if (checkIsIOS()) {
+      disableIosTextFieldZoom();
 </script>
 
 <!--- GoatCounter --->
