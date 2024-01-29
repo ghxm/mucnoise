@@ -201,8 +201,6 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
             event_dict['description'] = None
 
 
-
-
         # PARSE DESCRIPTION, ADD/OVERWRITE CUSTOM ATTRIBUTES
 
         if event_dict['description'] is not None:
