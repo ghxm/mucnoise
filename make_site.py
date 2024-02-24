@@ -119,9 +119,12 @@ for schedule_name, schedule_ in schedules.items():
 data = [f for f in os.listdir(utils.path_to_data_folder()) if not  os.path.isdir(os.path.join(utils.path_to_data_folder(), f)) and not f.startswith('.') or f.startswith('_')]
 
 site_folder = utils.path_to_site_folder()
+static_folder = utils.path_to_site_folder('static')
 
 for f in data:
     shutil.copyfile(utils.path_to_data_folder(f), os.path.join(site_folder, f))
+    # we also need to copy the files to the static folder due to legacy reasons
+    shutil.copyfile(utils.path_to_data_folder(f), os.path.join(static_folder, f))
 
 
 
