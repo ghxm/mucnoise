@@ -208,7 +208,7 @@ td.text span {
     /* text-decoration: line-through; Remove this line */
 }
 
-.cancelled span {
+.cancelled span, .cancelled a {
     text-decoration: line-through;
 }
 
