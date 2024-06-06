@@ -139,7 +139,7 @@
                                                         {% endif %}
 
                                                         <tr rowspan="2" class="row-event font-size-99 font-monospace {% if event.description %}row-no-border-bottom{% endif %} {{ rowclass }}" id = "{{ event.uid }}-{{ event_day_num }}">
-                                                            <td class="{{ tdclass }} {% if ongoing %}fst-italic text-secondary{% endif %} {% if event.get('cancelled') %}strikethrough{% endif %}">{% if ongoing %}(ongoing) {% endif %}{% if event.url != None %}<a class="{% if ongoing %}text-reset{% endif %} text-decoration-none fw-bold" target="_blank" href="{{ event.url }}">{{ event.title }}</a>{% else %}<span class="fw-bold">{{ event.title }}</span>{% endif %}
+                                                            <td class="{{ tdclass }} {% if ongoing %}ongoing text-secondary{% endif %} {% if event.get('cancelled') %}cancelled text-secondary{% endif %}">{% if event.url != None %}<a class="{% if ongoing %}text-reset{% endif %} text-decoration-none fw-bold" target="_blank" href="{{ event.url }}">{{ event.title }}</a>{% else %}<span class="fw-bold">{{ event.title }}</span>{% endif %}
 
                                                             </td>
                                                             <td class="{{ tdclass }} fst-italic font-size-99 fw-medium">
