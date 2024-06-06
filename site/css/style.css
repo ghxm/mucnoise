@@ -204,4 +204,21 @@ td.text span {
     border-bottom: none !important;
 }
 
+.cancelled {
+    /* text-decoration: line-through; Remove this line */
+}
 
+.cancelled span {
+    text-decoration: line-through;
+}
+
+.cancelled::before {
+    content: "(cancelled) ";
+        font-style: italic;
+
+}
+
+.ongoing::before {
+    content: "(ongoing) ";
+    font-style: italic;
+}
