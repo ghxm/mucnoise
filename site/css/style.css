@@ -208,7 +208,7 @@ td.text span {
     /* text-decoration: line-through; Remove this line */
 }
 
-.cancelled span, .cancelled a {
+.cancelled span {
     text-decoration: line-through;
 }
 
@@ -221,4 +221,12 @@ td.text span {
 .ongoing::before {
     content: "(ongoing) ";
     font-style: italic;
+}
+
+.event-title-link {
+    text-decoration: none;
+}
+
+.cancelled .event-title-link a {
+    text-decoration: line-through;
 }
