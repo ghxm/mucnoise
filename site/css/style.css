@@ -227,6 +227,6 @@ td.text span {
     text-decoration: none;
 }
 
-.cancelled .event-title-link a {
+.cancelled .event-title-link {
     text-decoration: line-through;
 }
