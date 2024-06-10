@@ -1,5 +1,5 @@
 ---
-title: "Ois Giasing! 2024 Crowdfunding campaign
+title: "Ois Giasing! 2024 Crowdfunding campaign"
 date: 2024-06-09
 from:
 to: 2024-09-07
