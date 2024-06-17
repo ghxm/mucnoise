@@ -38,7 +38,8 @@
             {% if news and news|length > 0 %}
                 <a href="#news" class="btn me-2 btn-outline-primary btn-sm">news</a>
             {% endif %}
-            <a href="#info" class="btn me-2 btn-outline-primary btn-sm">info</a>
+            <!---<a href="#info" class="btn me-2 btn-outline-primary btn-sm">info</a>--->
+            <a href="#howto" class="btn me-2 btn-outline-danger btn-sm">suggest an event!</a>
             {%  if path_exists('site/events.ics') %}
                     <a  href="events.ics" class="btn me-2 btn-outline-secondary btn-sm d-none d-md-block">.ics</a>
             {% endif %}
