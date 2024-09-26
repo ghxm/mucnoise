@@ -50,6 +50,8 @@ jobs:
           THEATER_URL: ${{ vars.THEATER_URL }}
         run: |
           # Build your site here
+          python3 -m venv venv
+          source venv/bin/activate
           pip3 install -r requirements.txt
           python3 parse_cal.py
           python3 make_site.py
