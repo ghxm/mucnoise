@@ -63,7 +63,7 @@ for schedule_name, schedule_ in schedules.items():
     schedule_ = schedule_modified
 
     # aggregate schedule by day
-    schedule_ = utils.aggregate_schedule(schedule_, groups=['year', 'kw', 'date'])
+    schedule_ = utils.aggregate_schedule(schedule_, groups=['kw_year', 'kw', 'date'])
 
     # make start_datetime and end_datetime into datetime objects
     for year in schedule_.keys():
