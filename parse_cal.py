@@ -261,6 +261,11 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
             event_dict['kw'] = None
 
         try:
+            event_dict['kw_year'] = utils.get_weeknum_year(event_dict['start'])
+        except:
+            event_dict['kw_year'] = None
+
+        try:
             event_dict['weekday_start'] = utils.get_weekday(event_dict['start'])
         except:
             event_dict['weekday_start'] = None

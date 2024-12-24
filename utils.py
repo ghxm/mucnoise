@@ -14,8 +14,7 @@ import icalendar
 import pandas as pd
 
 
-def get_config(prefix = "", get_all = False):
-
+def get_config(prefix="", get_all=False):
     config = {}
 
     # get cal url from environment vars
@@ -73,8 +72,8 @@ def get_config(prefix = "", get_all = False):
 
     return config
 
-def dict_has_key(dict, key):
 
+def dict_has_key(dict, key):
     if isinstance(key, (str, int, float)):
         return key in dict
 
@@ -84,6 +83,7 @@ def dict_has_key(dict, key):
             return True
         else:
             return False
+
 
 def path_to_folder(filename=None, folder=None):
     """
@@ -96,8 +96,6 @@ def path_to_folder(filename=None, folder=None):
     if not folder.endswith('/'):
         folder = folder + '/'
 
-
-
     # get path of current file
     path = os.path.dirname(os.path.realpath(__file__))
 
@@ -108,12 +106,15 @@ def path_to_folder(filename=None, folder=None):
         # get path of data folder
         return os.path.join(path, folder)
 
+
 def path_to_site_folder(filename=None):
     """
     Get path to data folder.
     """
 
     return path_to_folder(filename, 'site/')
+
+
 def path_to_data_folder(filename=None):
     """
     Get path to data folder.
@@ -121,8 +122,8 @@ def path_to_data_folder(filename=None):
 
     return path_to_folder(filename, 'data/')
 
-def read_cal(ics):
 
+def read_cal(ics):
     if ics.startswith('http'):
         ics_string = requests.get(ics).text
     else:
@@ -134,6 +135,7 @@ def read_cal(ics):
     cal = icalendar.Calendar.from_ical(ics_string)
 
     return cal
+
 
 def remove_html_tags(text):
     """Remove html tags from a string"""
@@ -150,23 +152,22 @@ def fix_html(text):
 
 
 def clean_yaml_str(text):
+    # remove html tags
+    text = remove_html_tags(text)
 
-        # remove html tags
-        text = remove_html_tags(text)
+    # remove leading and trailing spaces
+    text = text.strip()
 
-        # remove leading and trailing spaces
-        text = text.strip()
+    # remove leading and trailing newlines in front of ---
+    text = re.sub(r'\s*---', '\n---', text)
 
-        # remove leading and trailing newlines in front of ---
-        text = re.sub(r'\s*---', '\n---', text)
+    # remove leading and trailing spaces in front of entries
+    text = re.sub(r'\n\s+', '\n', text)
 
-        # remove leading and trailing spaces in front of entries
-        text = re.sub(r'\n\s+', '\n', text)
+    return text
 
-        return text
 
 def split_yaml_text(text):
-
     # try to identify the yaml part
 
     # easy (with ---)
@@ -185,7 +186,6 @@ def split_yaml_text(text):
             yaml_str = None
 
         if yaml_str is not None:
-
             return yaml_str, text
 
     # hard (without ---)
@@ -198,13 +198,14 @@ def split_yaml_text(text):
 
     return yaml_str, text
 
+
 def remove_html_tags(text):
     """Remove html tags from a string"""
     clean = re.compile('<.*?>')
     return re.sub(clean, '', text)
 
-def clean_description(text):
 
+def clean_description(text):
     description = text
 
     description = re.sub('Join with Google Meet.*', '', description, flags=re.IGNORECASE | re.MULTILINE | re.DOTALL)
@@ -234,12 +235,10 @@ def clean_description(text):
 
         description = yaml_part + '\n\n' + description
 
-
     return description
 
 
 def schedule_to_json(schedule):
-
     schedule_json = []
 
     for event in schedule:
@@ -263,8 +262,8 @@ def schedule_to_json(schedule):
 
     return schedule_json
 
-def schedule_to_ics(schedule):
 
+def schedule_to_ics(schedule):
     cal = icalendar.Calendar()
 
     for event in schedule:
@@ -289,6 +288,7 @@ def schedule_to_ics(schedule):
 
     return cal.to_ical().decode('utf-8')
 
+
 def schedule_to_csv(schedule):
     import csv
 
@@ -298,8 +298,9 @@ def schedule_to_csv(schedule):
     return csv
 
 
-def schedule_to_rss(schedule, author_email = get_config().get('site_owner_email', ''), url = get_config().get('site_url', ''), title = get_config().get('site_title', ''), content = get_config().get('site_description', ''), tz = get_config().get('timezone', 'Europe/Berlin')):
-
+def schedule_to_rss(schedule, author_email=get_config().get('site_owner_email', ''),
+                    url=get_config().get('site_url', ''), title=get_config().get('site_title', ''),
+                    content=get_config().get('site_description', ''), tz=get_config().get('timezone', 'Europe/Berlin')):
     if not str(url).endswith('/'):
         url += '/'
 
@@ -316,56 +317,55 @@ def schedule_to_rss(schedule, author_email = get_config().get('site_owner_email'
 
     for event in schedule:
 
-            fe = fg.add_entry()
-            fe.guid(str(event['uid']))
-            fe.title(str(event.get('date')) + ': ' + str(event.get('title', '')))
-            fe.link(href=event.get('url'))
+        fe = fg.add_entry()
+        fe.guid(str(event['uid']))
+        fe.title(str(event.get('date')) + ': ' + str(event.get('title', '')))
+        fe.link(href=event.get('url'))
 
-            if 'created' in event:
-                pub_date = event['created']
-            else:
-                pub_date = datetime.now(tz)
+        if 'created' in event:
+            pub_date = event['created']
+        else:
+            pub_date = datetime.now(tz)
 
-            if isinstance(pub_date, datetime):
-                pub_date = pub_date.astimezone(tz)
-            elif isinstance(pub_date, date):
-                pub_date = datetime.combine(pub_date, datetime.min.time()).astimezone(tz)
-            fe.pubDate(pub_date)
+        if isinstance(pub_date, datetime):
+            pub_date = pub_date.astimezone(tz)
+        elif isinstance(pub_date, date):
+            pub_date = datetime.combine(pub_date, datetime.min.time()).astimezone(tz)
+        fe.pubDate(pub_date)
 
+        if 'last_modified' in event:
+            last_modified = event['last_modified']
 
-            if 'last_modified' in event:
-                last_modified = event['last_modified']
+            if isinstance(last_modified, datetime):
+                last_modified = last_modified.astimezone(tz)
+            elif isinstance(last_modified, date):
+                last_modified = datetime.combine(last_modified, datetime.min.time()).astimezone(tz)
+            fe.updated(last_modified)
 
-                if isinstance(last_modified, datetime):
-                    last_modified = last_modified.astimezone(tz)
-                elif isinstance(last_modified, date):
-                    last_modified = datetime.combine(last_modified, datetime.min.time()).astimezone(tz)
-                fe.updated(last_modified)
+        content = ''
 
+        for key, value in event.items():
+            if key not in ['uid', 'title', 'url', 'duration_seconds', 'kw', 'year', 'date', 'weekday_end',
+                           'description', 'created']:
+                content += '\n\n' + str(key) + ': ' + str(value)
 
+        content += '\n\n' + str(event['description'])
 
-            content = ''
+        fe.content(content)
+        fe.source(str(url) + '#' + str(event['uid']))
 
-            for key, value in event.items():
-                if key not in ['uid', 'title', 'url', 'duration_seconds', 'kw', 'year', 'date', 'weekday_end', 'description', 'created']:
-                    content += '\n\n' + str(key) + ': ' + str(value)
-
-            content += '\n\n' + str(event['description'])
-
-            fe.content(content)
-            fe.source(str(url) + '#' + str(event['uid']))
-
-            if event['description'] is not None:
-                fe.description(str(event['description'][:80] + '...'))
-
+        if event['description'] is not None:
+            fe.description(str(event['description'][:80] + '...'))
 
     return fg.rss_str(pretty=True).decode('utf-8')
+
 
 def daterange(start_date, end_date):
     for n in range(int((end_date - start_date).days)):
         yield start_date + timedelta(n)
 
-def make_datetime(in_date, time = "00:00", tz=get_config().get('timezone', 'Europe/Berlin')):
+
+def make_datetime(in_date, time="00:00", tz=get_config().get('timezone', 'Europe/Berlin')):
     """
     Make datetime object from date and time.
     """
@@ -392,15 +392,14 @@ def make_datetime(in_date, time = "00:00", tz=get_config().get('timezone', 'Euro
 
     datetime_obj = datetime.strptime(datetime_str, format)
 
-
     # set timezone
     tz = pytz.timezone(tz)
     datetime_obj = tz.localize(datetime_obj)
 
     return datetime_obj
 
-def make_date(in_date, tz):
 
+def make_date(in_date, tz):
     if isinstance(in_date, datetime):
         result = in_date.date()
     elif isinstance(in_date, date):
@@ -411,7 +410,7 @@ def make_date(in_date, tz):
     return result
 
 
-def ensure_tz(dt, tz = get_config().get('timezone', 'Europe/Berlin')):
+def ensure_tz(dt, tz=get_config().get('timezone', 'Europe/Berlin')):
     """
     Ensure that datetime object has timezone.
     """
@@ -423,12 +422,10 @@ def ensure_tz(dt, tz = get_config().get('timezone', 'Europe/Berlin')):
     if dt.tzinfo != tz:
         dt = dt.astimezone(pytz.timezone(tz))
 
-
     return dt
 
-def ymd_string (in_date):
 
-
+def ymd_string(in_date):
     # try to parse date
     if isinstance(in_date, str):
         try:
@@ -445,22 +442,36 @@ def ymd_string (in_date):
 
     return out_date
 
-def get_weekday(date):
 
+def get_weekday(date):
     return date.strftime('%A')
 
-def get_year(date):
 
+def get_year(date):
     return date.strftime('%Y')
 
 
 def get_weeknum(date):
-
     # retrun the week number
     return date.strftime('%V')
 
-def get_today(return_date_obj = False, tz =get_config().get('timezone')):
 
+def get_weeknum_year(date):
+    # Return the sensible KW year for a date (if KW == 1 return next year, else current year)
+    kw = get_weeknum(date)
+
+    kw_start_day = date - timedelta(days=date.weekday())
+    kw_end_day = kw_start_day + timedelta(days=6)
+
+    kw_years = [get_year(kw_start_day), get_year(kw_end_day)]
+
+    if kw == '01':
+        return kw_years[1]
+    else:
+        return kw_years[0]
+
+
+def get_today(return_date_obj=False, tz=get_config().get('timezone')):
     # set timezone
     tz = pytz.timezone(tz)
 
@@ -470,15 +481,17 @@ def get_today(return_date_obj = False, tz =get_config().get('timezone')):
 
         return datetime.now(tz).date().strftime('%Y-%m-%d')
 
-def remove_events(schedule, cutoff_date=get_today(return_date_obj=True), remove='past'):
 
+def remove_events(schedule, cutoff_date=get_today(return_date_obj=True), remove='past'):
     assert remove in ['past', 'future'], 'remove must be either "past" or "future"'
 
     if isinstance(cutoff_date, datetime):
 
         if remove == 'past':
             # keep events that end before cutoff datetime or start on the same day
-            schedule = [event for event in schedule if ensure_tz(datetime.fromisoformat(event['end'])) >= cutoff_date or ensure_tz(datetime.fromisoformat(event['start'])).date() == cutoff_date.date()]
+            schedule = [event for event in schedule if
+                        ensure_tz(datetime.fromisoformat(event['end'])) >= cutoff_date or ensure_tz(
+                            datetime.fromisoformat(event['start'])).date() == cutoff_date.date()]
         elif remove == 'future':
             schedule = [event for event in schedule if ensure_tz(datetime.fromisoformat(event['start'])) < cutoff_date]
 
@@ -486,24 +499,27 @@ def remove_events(schedule, cutoff_date=get_today(return_date_obj=True), remove=
 
         if remove == 'past':
             # keep events that end on cutoff date
-            schedule = [event for event in schedule if make_date(datetime.fromisoformat(event['end']), get_config().get('timezone', 'Europe/Berlin')) >= cutoff_date if
+            schedule = [event for event in schedule if make_date(datetime.fromisoformat(event['end']),
+                                                                 get_config().get('timezone',
+                                                                                  'Europe/Berlin')) >= cutoff_date if
                         event['end'] != '' and event['end'] is not None]
         elif remove == 'future':
             # remove events that start on or after cutoff date
-            schedule = [event for event in schedule if make_date(datetime.fromisoformat(event['start']), get_config().get('timezone', 'Europe/Berlin')) < cutoff_date
+            schedule = [event for event in schedule if make_date(datetime.fromisoformat(event['start']),
+                                                                 get_config().get('timezone',
+                                                                                  'Europe/Berlin')) < cutoff_date
                         if event['start'] != '' and event['start'] is not None]
 
-
-
     return schedule
+
 
 def nested_set(dic, keys, value):
     for key in keys[:-1]:
         dic = dic.setdefault(key, {})
     dic[keys[-1]] = value
 
-def aggregate_schedule(schedule, groups = []):
 
+def aggregate_schedule(schedule, groups=[]):
     # sort by groups
     schedule.sort(key=lambda x: tuple(x[g] for g in groups))
 
@@ -515,8 +531,6 @@ def aggregate_schedule(schedule, groups = []):
 
     # set the events for each group(s)
     for group, events in schedule_grouped:
-
-            nested_set(schedule_agg, group, list(events))
-
+        nested_set(schedule_agg, group, list(events))
 
     return schedule_agg
