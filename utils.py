@@ -2,7 +2,7 @@ import re
 import requests
 import yaml
 import icalendar
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 import pytz
 import os
 import itertools
@@ -32,7 +32,7 @@ def get_config(prefix="", get_all=False):
     config['timezone'] = os.environ.get(prefix + 'TIMEZONE')
     if config['timezone'] is None:
         warnings.warn('No timezone found in environment variables. Assuming machine local timezone.')
-        config['timezone'] = datetime.now().astimezone().tzinfo
+        config['timezone'] = str(datetime.now().astimezone().tzinfo)
 
     # get site title
     config['site_title'] = os.environ.get(prefix + 'SITE_TITLE')
@@ -304,7 +304,8 @@ def schedule_to_rss(schedule, author_email=get_config().get('site_owner_email', 
     if not str(url).endswith('/'):
         url += '/'
 
-    tz = pytz.timezone(tz)
+    if not isinstance(tz, timezone):
+        tz = pytz.timezone(tz)
 
     fg = FeedGenerator()
     fg.id(str(url))
@@ -393,6 +394,9 @@ def make_datetime(in_date, time="00:00", tz=get_config().get('timezone', 'Europe
     datetime_obj = datetime.strptime(datetime_str, format)
 
     # set timezone
+    if isinstance(tz, timezone):
+        # make tz inzo a string to be sure
+        tz = str(tz)
     tz = pytz.timezone(tz)
     datetime_obj = tz.localize(datetime_obj)
 
@@ -415,7 +419,12 @@ def ensure_tz(dt, tz=get_config().get('timezone', 'Europe/Berlin')):
     Ensure that datetime object has timezone.
     """
 
+    if isinstance(tz, timezone):
+        # make tz inzo a string to be sure
+        tz = str(tz)
+
     if dt.tzinfo is None:
+
         dt = pytz.timezone(tz).localize(dt)
 
     # if timezone is not tz, convert
@@ -473,7 +482,8 @@ def get_weeknum_year(date):
 
 def get_today(return_date_obj=False, tz=get_config().get('timezone')):
     # set timezone
-    tz = pytz.timezone(tz)
+    if not isinstance(tz, timezone):
+        tz = pytz.timezone(tz)
 
     if return_date_obj:
         return datetime.now(tz).date()
