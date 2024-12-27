@@ -164,6 +164,9 @@ def clean_yaml_str(text):
     # remove leading and trailing spaces in front of entries
     text = re.sub(r'\n\s+', '\n', text)
 
+    # remove nbsp after colon
+    text = re.sub(r':\s+', ': ', text)
+
     return text
 
 
@@ -195,6 +198,8 @@ def split_yaml_text(text):
     for m in yaml_match:
         yaml_str += m + '\n' if not m.endswith('\n') else m
         text = text.replace(m, '')
+
+
 
     return yaml_str, text
 
