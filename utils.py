@@ -240,6 +240,10 @@ def clean_description(text):
 
         description = yaml_part + '\n\n' + description
 
+    # remove <br> from beginning and end of description
+    description = re.sub(r'^(\s*<.{0,1}br>)+', '', description, flags=re.IGNORECASE)
+    description = re.sub(r'(\s*<.{0,1}br>)+$', '', description, flags=re.IGNORECASE)
+
     return description
 
 
