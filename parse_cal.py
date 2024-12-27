@@ -214,6 +214,8 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
             # try to parse yaml from description
             yaml_desc, description = utils.split_yaml_text(event_dict['description'])
 
+
+
             if yaml_desc is not None:
                 # parse yaml and add to event_dict
                 try:
@@ -226,8 +228,6 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
             for yaml_dict in yaml_dicts:
                 if yaml_dict is not None and isinstance(yaml_dict, dict):
                     event_dict.update(yaml_dict)
-                else:
-                    warnings.warn('Could not parse yaml from description. Contininuing without YAML attributes.')
 
 
             # parse description and add to event_dict
