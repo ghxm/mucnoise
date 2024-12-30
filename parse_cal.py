@@ -247,6 +247,13 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
 
                 # remove leading <br> tags
                 event_dict['description'] = re.sub(r'^\s*(<.{0,1}br>[\s]*)+', '', event_dict['description'])
+
+                # remove all <p> tags
+                event_dict['description'] = re.sub(r'<p>', '', event_dict['description'])
+
+                # replace all </p> tags with <br>
+                event_dict['description'] = re.sub(r'</p>', '<br>', event_dict['description'])
+
             else:
                 event_dict['description'] = None
 
