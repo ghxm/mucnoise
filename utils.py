@@ -237,12 +237,14 @@ def clean_description(text):
 
         # remove html tags
         yaml_part = remove_html_tags(yaml_part)
-
-        description = yaml_part + '\n\n' + description
+    else:
+        yaml_part = ''
 
     # remove <br> from beginning and end of description
     description = re.sub(r'^(\s*<.{0,1}br>)+', '', description, flags=re.IGNORECASE)
     description = re.sub(r'(\s*<.{0,1}br>)+$', '', description, flags=re.IGNORECASE)
+
+    description = yaml_part + '\n\n' + description
 
     return description
 
