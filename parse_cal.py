@@ -205,7 +205,6 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
 
         if event_dict['description'] is not None:
 
-
             yaml_dict = None
 
             # clean from html
@@ -213,8 +212,6 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
 
             # try to parse yaml from description
             yaml_desc, description = utils.split_yaml_text(event_dict['description'])
-
-
 
             if yaml_desc is not None:
                 # parse yaml and add to event_dict
@@ -230,6 +227,12 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
                     event_dict.update(yaml_dict)
 
 
+            if description:
+                description = description.strip()
+
+            if len(description) == 0:
+                description = None
+
             # parse description and add to event_dict
             if description is not None:
                 if partstat is not None:
@@ -242,6 +245,8 @@ def parse_cal(cal, outpaths = [], allow_unaccepted = False, always_allow_senders
 
                 # remove leading <br> tags
                 event_dict['description'] = re.sub(r'^\s*(<.{0,1}br>[\s]*)+', '', event_dict['description'])
+            else:
+                event_dict['description'] = None
 
 
         # ADD DATE ATTRIBUTES
