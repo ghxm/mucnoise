@@ -288,7 +288,7 @@ def schedule_to_ics(schedule):
                 cal_event.add('summary', value)
             elif key.lower() == 'description':
                 if event.get('url') is not None:
-                    value = value + '\n\n' + event.get('url')
+                    value = value if value is not None else '' + '\n\n' + event.get('url')
                 cal_event.add('description', value)
             elif key.lower() == 'cancelled':
                 if value:
