@@ -56,7 +56,7 @@ jobs:
           python3 parse_cal.py
           python3 make_site.py
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v4
         with:
           # Upload site filder
           path: './site'
