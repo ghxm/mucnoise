@@ -73,12 +73,13 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-  keepalive-job:
-    name: Keepalive Workflow
+
+  workflow-keepalive:
+    if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
     permissions:
       actions: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: gautamkrishnar/keepalive-workflow@v2
+      - uses: liskin/gh-workflow-keepalive@v1
+
 
