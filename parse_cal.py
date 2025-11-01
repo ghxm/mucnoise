@@ -92,6 +92,9 @@ def parse_event(event, allow_unaccepted=False, always_allow_senders=[], site_own
 
     sender_attendee = [sender] if sender is not None else []
     sender_attendee.extend([attendee[0]] if attendee is not None and isinstance(attendee, list) and len(attendee) > 0 else [])
+    
+    # remove duplicates
+    sender_attendee = list(set(sender_attendee))
 
     if len(sender_attendee) > 0:
 
