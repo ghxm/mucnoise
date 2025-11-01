@@ -72,10 +72,54 @@ def parse_event(event, allow_unaccepted=False, always_allow_senders=[], site_own
 
         site_owner_re = re.compile(r'(mailto:)?' + str(site_owner_email), flags=re.IGNORECASE)
 
-        partstat = [a for a in event.get('attendee') if site_owner_re.search(a.params.get('CN', ''))][0].params.get('PARTSTAT') \
-            if isinstance(event.get('attendee'), list) else event.get('attendee').params.get('PARTSTAT') \
-            if event.get('attendee') is not None and site_owner_re.search(event.get('attendee')) \
-            else None
+        def _extract_attendee_email(a):
+            try:
+                if isinstance(a, icalendar.prop.vCalAddress):
+                    params = a.params
+                    # prefer MAILTO, EMAIL, CN
+                    if 'MAILTO' in params:
+                        return params.get('MAILTO')
+                    if 'EMAIL' in params:
+                        return params.get('EMAIL')
+                    if 'CN' in params:
+                        return params.get('CN')
+                    # fallback to the part after the colon
+                    s = str(a)
+                    return s.split(':', 1)[1] if ':' in s else s
+                # not a vCalAddress, treat as string
+                s = str(a)
+                if s.lower().startswith('mailto:'):
+                    return s.split(':', 1)[1]
+                return s
+            except Exception:
+                return None
+
+
+        partstat = None
+        attendees = event.get('attendee')
+        
+        if attendees is None:
+            partstat = None
+        else:
+            if isinstance(attendees, list):
+                # find the attendee whose CN matches the site owner
+                matched = None
+                for a in attendees:
+                    cn = _extract_attendee_email(a)
+                    if site_owner_re.search(cn):
+                        matched = a
+                        break
+                partstat = matched.params.get('PARTSTAT') if matched is not None else None
+            else:
+                # single attendee; check CN first, fallback to string representation
+                try:
+                    cn = _extract_attendee_email(attendees)
+                except Exception:
+                    cn = str(attendees)
+                if site_owner_re.search(cn):
+                    partstat = attendees.params.get('PARTSTAT')
+                else:
+                    partstat = None
 
     except:
 
