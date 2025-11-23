@@ -231,36 +231,9 @@ td.text span {
     text-decoration: line-through;
 }
 
-/* Dark mode styles */
+/* Dark mode styles - invert all colors */
 @media (prefers-color-scheme: dark) {
-    body {
-        background-color: #121212;
-        color: #e0e0e0;
-    }
-    
-    .row-even {
-        background-color: #1e1e1e;
-    }
-    
-    .text-reduced {
-        color: #a0a0a0;
-    }
-    
-    .text-grey {
-        color: #888 !important;
-    }
-    
-    .title {
-        background-color: transparent !important;
-        border-color: #e0e0e0 !important;
-        color: #e0e0e0 !important;
-    }
-    
-    .border-grey {
-        border-color: #666 !important;
-    }
-    
-    .dot {
-        background-color: #666;
+    html {
+        filter: invert(1) hue-rotate(180deg);
     }
 }
