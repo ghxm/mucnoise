@@ -27,6 +27,7 @@ jobs:
   check-calendar-changes:
     runs-on: ubuntu-22.04
     timeout-minutes: 5
+    environment: github-pages
     if: github.event_name == 'schedule'
     outputs:
       calendar-changed: ${{ steps.check-changes.outputs.changed }}
