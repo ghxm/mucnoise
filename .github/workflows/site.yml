@@ -86,8 +86,10 @@ jobs:
     environment: github-pages
     needs: [check-calendar-changes]
     if: |
-      github.event_name != 'schedule' ||
-      needs.check-calendar-changes.outputs.calendar-changed == 'true'
+      always() && (
+        github.event_name != 'schedule' ||
+        needs.check-calendar-changes.result == 'success' && needs.check-calendar-changes.outputs.calendar-changed == 'true'
+      )
     steps:
       - name: Checkout
         uses: actions/checkout@v4
