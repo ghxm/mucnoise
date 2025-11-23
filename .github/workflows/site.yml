@@ -37,7 +37,9 @@ jobs:
         id: cache-restore
         with:
           path: previous_calendar_hash.txt
-          key: calendar-hash
+          key: calendar-hash-never-matches
+          restore-keys: |
+            calendar-hash-
 
       - name: Download calendar and check for changes
         id: check-changes
@@ -76,7 +78,7 @@ jobs:
         uses: actions/cache/save@v3
         with:
           path: previous_calendar_hash.txt
-          key: calendar-hash
+          key: calendar-hash-${{ github.run_id }}
 
   build:
     runs-on: ubuntu-22.04
