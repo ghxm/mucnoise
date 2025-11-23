@@ -134,24 +134,5 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
     
-  workflow-keepalive:
-    if: github.event_name == 'schedule'
-    runs-on: ubuntu-latest
-    permissions:
-      actions: write
-    steps:
-      - name: Check if should run keepalive
-        id: check-time
-        run: |
-          # Only run once per day at midnight UTC
-          current_hour=$(date -u +%H)
-          current_minute=$(date -u +%M)
-          if [ "$current_hour" = "00" ] && [ "$current_minute" -lt "30" ]; then
-            echo "should_run=true" >> $GITHUB_OUTPUT
-          else
-            echo "should_run=false" >> $GITHUB_OUTPUT
-          fi
-      - uses: liskin/gh-workflow-keepalive@v1
-        if: steps.check-time.outputs.should_run == 'true'
 
 
