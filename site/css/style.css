@@ -132,7 +132,7 @@ td.text span {
 }
 
 .row-even {
-    background-color: #e8e8e8;
+    background-color: #f0f0f0;
 }
 
 .font-size-99 {
@@ -230,9 +230,3 @@ td.text span {
     text-decoration: line-through;
 }
 
-/* Dark mode styles - invert all colors */
-@media (prefers-color-scheme: dark) {
-    html {
-        filter: invert(1) hue-rotate(180deg);
-    }
-}
