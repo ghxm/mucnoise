@@ -24,10 +24,67 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  check-calendar-changes:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    if: github.event_name == 'schedule'
+    outputs:
+      calendar-changed: ${{ steps.check-changes.outputs.changed }}
+    steps:
+      - name: Restore previous calendar hash
+        uses: actions/cache/restore@v3
+        id: cache-restore
+        with:
+          path: previous_calendar_hash.txt
+          key: calendar-hash
+
+      - name: Download calendar and check for changes
+        id: check-changes
+        env:
+          CAL_URI: ${{ secrets.CAL_URI }}
+        run: |
+          # Download the calendar ICS file
+          curl -s "$CAL_URI" -o current_calendar.ics
+          
+          # Compute SHA256 hash
+          CURRENT_HASH=$(sha256sum current_calendar.ics | cut -d' ' -f1)
+          echo "Current calendar hash: $CURRENT_HASH"
+          
+          # Try to get previous hash from cache
+          if [ -f previous_calendar_hash.txt ]; then
+            PREVIOUS_HASH=$(cat previous_calendar_hash.txt)
+            echo "Previous calendar hash: $PREVIOUS_HASH"
+          else
+            PREVIOUS_HASH=""
+            echo "No previous hash found (first run)"
+          fi
+          
+          # Compare hashes
+          if [ "$CURRENT_HASH" = "$PREVIOUS_HASH" ]; then
+            echo "Calendar unchanged, skipping build"
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Calendar changed, proceeding with build"
+            echo "changed=true" >> $GITHUB_OUTPUT
+            # Store current hash for next run
+            echo "$CURRENT_HASH" > previous_calendar_hash.txt
+          fi
+
+      - name: Save calendar hash
+        if: steps.check-changes.outputs.changed == 'true'
+        uses: actions/cache/save@v3
+        with:
+          path: previous_calendar_hash.txt
+          key: calendar-hash
+
   build:
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     environment: github-pages
+    needs: [check-calendar-changes]
+    if: |
+      github.event_name != 'schedule' ||
+      needs.check-calendar-changes.outputs.calendar-changed == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -67,7 +124,8 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build]
+    if: always() && needs.build.result == 'success'
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
