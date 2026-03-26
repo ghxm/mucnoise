@@ -138,6 +138,23 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-    
 
+  # Keep the repo active so GitHub doesn't disable scheduled workflows (60-day inactivity rule)
+  update-last-build:
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: always() && needs.deploy.result == 'success'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+      - name: Update .last-build timestamp
+        run: |
+          date -u +"%Y-%m-%d" > .last-build
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .last-build
+          git diff --cached --quiet && echo "Already up to date" || (git commit -m "Update .last-build [skip ci]" && git push)
 
