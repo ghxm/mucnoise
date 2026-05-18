@@ -342,9 +342,13 @@
 
             <p class="h3">About</p>
 
+            {% if config.get('site_about') %}
+            <p>{{ config.get('site_about') }}</p>
+            {% else %}
             <p>
-                This is an overview of events subject to personal taste, inspired by <a target="_blank"  href="https://www.nyc-noise.com">nyc-noise.com</a>, with a focus on more off-kilter and left-field music-related selections.
+                This is a collaborative overview of events subject to personal taste, inspired by <a target="_blank"  href="https://www.nyc-noise.com">nyc-noise.com</a>, with a focus on more off-kilter and left-field music-related selections.
             </p>
+            {% endif %}
 
 
     </div>

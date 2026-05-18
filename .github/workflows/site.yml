@@ -112,6 +112,7 @@ jobs:
           SITE_TITLE: ${{ vars.SITE_TITLE }}
           SITE_URL: ${{ vars.SITE_URL }}
           SITE_DESCRIPTION: ${{ vars.SITE_DESCRIPTION }}
+          SITE_ABOUT: ${{ vars.SITE_ABOUT }}
           THEATER_URL: ${{ vars.THEATER_URL }}
         run: |
           # Build your site here
