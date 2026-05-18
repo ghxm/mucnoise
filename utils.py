@@ -46,6 +46,10 @@ def get_config(prefix="", get_all=False):
         del config['site_url']
         warnings.warn('No site url found in environment variables.')
 
+    config['site_about'] = os.environ.get(prefix + 'SITE_ABOUT')
+    if config['site_about'] is None:
+        del config['site_about']
+
     config['site_description'] = os.environ.get(prefix + 'SITE_DESCRIPTION', 'Event repsitory')
     if config['site_description'] is None:
         del config['site_description']
