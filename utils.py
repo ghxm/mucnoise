@@ -177,6 +177,12 @@ def clean_yaml_str(text):
 def split_yaml_text(text):
     # try to identify the yaml part
 
+    # Normalize <br> -> \n so the line-anchored regexes below can find `key:`
+    # entries even when a calendar app emits <br>-separated descriptions
+    # instead of real newlines. Converted back to <br> before returning.
+    br_re = re.compile(r'<\s*/?\s*br\s*/?\s*>', flags=re.IGNORECASE)
+    text = br_re.sub('\n', text)
+
     # easy (with ---)
     yaml_match = re.search(r'^\s*---\s+.*[\s]+---\s*', text, flags=re.MULTILINE | re.DOTALL)
 
@@ -193,6 +199,7 @@ def split_yaml_text(text):
             yaml_str = None
 
         if yaml_str is not None:
+            text = re.sub(r'\n', '<br>', text)
             return yaml_str, text
 
     # hard (without ---)
@@ -203,8 +210,14 @@ def split_yaml_text(text):
         yaml_str += m + '\n' if not m.endswith('\n') else m
         text = text.replace(m, '')
 
+    if yaml_str:
+        yaml_str = clean_yaml_str(yaml_str)
+        try:
+            yaml.safe_load_all(yaml_str)
+        except yaml.YAMLError:
+            yaml_str = ''
 
-
+    text = re.sub(r'\n', '<br>', text)
     return yaml_str, text
 
 
