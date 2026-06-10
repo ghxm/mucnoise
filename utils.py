@@ -268,24 +268,15 @@ def clean_description(text):
 
 def schedule_to_json(schedule):
     schedule_json = []
+    dt_keys = ('start', 'end', 'created', 'last_modified')
 
     for event in schedule:
-
         event_json = {}
-
         for key, value in event.items():
-
-            if key == 'start':
-                event_json['start'] = value.isoformat()
-            elif key == 'end':
-                event_json['end'] = value.isoformat()
-            elif key == 'created':
-                event_json['created'] = value.isoformat()
-            elif key == 'last_modified':
-                event_json['last_modified'] = value.isoformat()
+            if key in dt_keys and value is not None:
+                event_json[key] = value.isoformat()
             else:
                 event_json[key] = value
-
         schedule_json.append(event_json)
 
     return schedule_json
