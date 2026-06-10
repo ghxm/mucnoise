@@ -1,3 +1,4 @@
+import calendar
 import jinja2
 import utils
 import os
@@ -16,6 +17,13 @@ schedule_path = utils.path_to_data_folder('events.json')
 
 # Create a Jinja2 environment
 env = jinja2.Environment(loader=jinja2.FileSystemLoader('templates'), extensions=['jinja2.ext.loopcontrols'])
+
+# URL helpers exposed to all templates. KW slug uses uppercase W per ISO 8601
+# week notation (2026-W02). Month and KW arrive zero-padded as strings from
+# the parser; year_url accepts either kw_year or calendar year (caller decides).
+env.globals['year_url'] = lambda y: '/{}/'.format(y)
+env.globals['month_url'] = lambda y, m: '/{}/{:02d}/'.format(y, int(m))
+env.globals['kw_url'] = lambda y, k: '/{}/W{}/'.format(y, k)
 
 # Load a template
 template = env.get_template('index.j2')
@@ -222,7 +230,8 @@ with open('site/archive.html', 'w') as f:
                             truncate = lambda x, n: x[:n] + '...' if len(x) > n else x,
                             value_display = lambda x: x if x is not None else '',
                             dict_has_key = utils.dict_has_key,
-                            archive = True
+                            archive = True,
+                            subset_view = None,
                             )
                             )
 
@@ -240,14 +249,183 @@ with open('site/index.html', 'w') as f:
                             truncate = lambda x, n: x[:n] + '...' if len(x) > n else x,
                             value_display = lambda x: x if x is not None else '',
                             dict_has_key = utils.dict_has_key,
-                            archive = False
+                            archive = False,
+                            subset_view = None,
                             )
                             )
+
+
+# SUBSET PAGES
+#
+# Generate per-year, per-month, and per-KW pages when the feature is enabled.
+# Each subset page shows past + future combined for its period, reusing
+# templates/index.j2 with a `subset_view` context dict.
+
+sitemap_pages = ['', 'archive']
+
+if config.get('subset_pages_enabled'):
+
+    # Build a flat, multi-day-exploded event list from data/events.json.
+    # We can't reuse `schedules` because that's already aggregated; the
+    # subset path needs to filter individual events by year/month/KW.
+    raw_events = json.loads(open(schedule_path, 'r').read())
+
+    all_events_exploded = []
+    for event in raw_events:
+        if event['duration_seconds'] > 60 * 60 * 24:
+            if event['all_day']:
+                days = [d for d in utils.daterange(
+                    utils.make_datetime(event['start']),
+                    utils.make_datetime(event['end']),
+                )]
+            else:
+                days = [d for d in utils.daterange(
+                    datetime.fromisoformat(event['start']),
+                    datetime.fromisoformat(event['end']),
+                )]
+            for i, day in enumerate(days):
+                ec = event.copy()
+                ec['event_day_num'] = i + 1
+                ec['date'] = utils.ymd_string(day)
+                ec['kw'] = utils.get_weeknum(day)
+                all_events_exploded.append(ec)
+        else:
+            ec = event.copy()
+            ec['event_day_num'] = 1
+            all_events_exploded.append(ec)
+
+    # Derive calendar year + calendar month for each event from `start`.
+    # The data already has `kw_year` and `year`, but the latter is also
+    # calendar-based and could differ from `kw_year` at week boundaries.
+    for e in all_events_exploded:
+        if e['all_day']:
+            start_dt = utils.make_datetime(e['start'])
+        else:
+            start_dt = datetime.fromisoformat(e['start'])
+        e['_cal_year'] = '{:04d}'.format(start_dt.year)
+        e['_cal_month'] = '{:02d}'.format(start_dt.month)
+
+    subset_years = sorted({e['kw_year'] for e in all_events_exploded if e.get('kw_year')})
+    subset_months = sorted({(e['_cal_year'], e['_cal_month']) for e in all_events_exploded})
+    subset_kws = sorted({(e['kw_year'], e['kw']) for e in all_events_exploded
+                          if e.get('kw_year') and e.get('kw')})
+
+    site_url = config.get('site_url', '').rstrip('/')
+
+    def _build_subset_view(view_type, **kwargs):
+        """Precompute label/desc/canonical/breadcrumbs for a subset page."""
+        if view_type == 'year':
+            y = kwargs['year']
+            label = y
+            desc = 'Music events in Munich in {}.'.format(y)
+            canonical = '{}/{}/'.format(site_url, y)
+            breadcrumbs = [('Home', site_url + '/'), (y, canonical)]
+        elif view_type == 'month':
+            y, m = kwargs['year'], kwargs['month']
+            month_name = calendar.month_name[int(m)]
+            label = '{} {}'.format(month_name, y)
+            desc = 'Music events in Munich in {} {}.'.format(month_name, y)
+            canonical = '{}/{}/{}/'.format(site_url, y, m)
+            breadcrumbs = [('Home', site_url + '/'),
+                           (y, '{}/{}/'.format(site_url, y)),
+                           (label, canonical)]
+        elif view_type == 'kw':
+            y, k = kwargs['year'], kwargs['kw']
+            label = 'KW {} / {}'.format(k, y)
+            desc = 'Music events in Munich in week {} of {}.'.format(int(k), y)
+            canonical = '{}/{}/W{}/'.format(site_url, y, k)
+            breadcrumbs = [('Home', site_url + '/'),
+                           (y, '{}/{}/'.format(site_url, y)),
+                           ('KW {}'.format(k), canonical)]
+        else:
+            raise ValueError(view_type)
+        return {
+            'type': view_type,
+            'label': label,
+            'desc': desc,
+            'canonical': canonical,
+            'breadcrumbs': breadcrumbs,
+            **kwargs,
+        }
+
+    def _render_subset(filter_fn, subset_view, out_path):
+        filtered = [e for e in all_events_exploded if filter_fn(e)]
+        if not filtered:
+            return
+
+        aggregated = utils.aggregate_schedule(filtered, groups=['kw_year', 'kw', 'date'])
+
+        for y in aggregated:
+            for kw in aggregated[y]:
+                for dt in aggregated[y][kw]:
+                    for ev in aggregated[y][kw][dt]:
+                        ev['date_datetime'] = utils.make_date(ev['date'], config.get('timezone')) if ev['date'] else None
+                        ev['start_datetime'] = utils.ensure_tz(datetime.fromisoformat(ev['start']), config.get('timezone')) if ev['start'] else None
+                        ev['end_datetime'] = utils.ensure_tz(datetime.fromisoformat(ev['end']), config.get('timezone')) if ev['end'] else None
+
+        # Sort ascending at every level (subset pages show oldest -> newest)
+        aggregated = {y: aggregated[y] for y in sorted(aggregated.keys())}
+        for y in aggregated:
+            aggregated[y] = {kw: aggregated[y][kw] for kw in sorted(aggregated[y].keys())}
+            for kw in aggregated[y]:
+                aggregated[y][kw] = {dt: aggregated[y][kw][dt] for dt in sorted(aggregated[y][kw].keys())}
+                for dt in aggregated[y][kw]:
+                    aggregated[y][kw][dt] = sorted(aggregated[y][kw][dt],
+                                                    key=lambda x: x['start_datetime'])
+
+        sub_dates = [dt for y in aggregated for kw in aggregated[y] for dt in aggregated[y][kw]]
+        sub_date_weekdays = {
+            dt: utils.get_weekday(utils.make_date(dt, tz=config.get('timezone')))
+            for dt in sub_dates
+        }
+
+        os.makedirs(os.path.dirname(out_path), exist_ok=True)
+        with open(out_path, 'w') as f:
+            f.write(template.render(
+                config=config,
+                schedule=aggregated,
+                news=[],
+                venues=venues,
+                date_weekdays=sub_date_weekdays,
+                today=utils.get_today(),
+                today_datetime=utils.get_today(return_date_obj=True),
+                now=datetime.now(pytz.timezone(config.get('timezone'))),
+                path_exists=lambda x: os.path.exists(x),
+                truncate=lambda x, n: x[:n] + '...' if len(x) > n else x,
+                value_display=lambda x: x if x is not None else '',
+                dict_has_key=utils.dict_has_key,
+                archive=False,
+                subset_view=subset_view,
+            ))
+
+    for y in subset_years:
+        _render_subset(
+            filter_fn=lambda e, y=y: e.get('kw_year') == y,
+            subset_view=_build_subset_view('year', year=y),
+            out_path='site/{}/index.html'.format(y),
+        )
+        sitemap_pages.append('{}/'.format(y))
+
+    for y, m in subset_months:
+        _render_subset(
+            filter_fn=lambda e, y=y, m=m: e['_cal_year'] == y and e['_cal_month'] == m,
+            subset_view=_build_subset_view('month', year=y, month=m),
+            out_path='site/{}/{}/index.html'.format(y, m),
+        )
+        sitemap_pages.append('{}/{}/'.format(y, m))
+
+    for y, k in subset_kws:
+        _render_subset(
+            filter_fn=lambda e, y=y, k=k: e['kw_year'] == y and e['kw'] == k,
+            subset_view=_build_subset_view('kw', year=y, kw=k),
+            out_path='site/{}/W{}/index.html'.format(y, k),
+        )
+        sitemap_pages.append('{}/W{}/'.format(y, k))
 
 
 # generate sitemap
 with open('site/sitemap.xml', 'w') as f:
     f.write(sitemap_template.render(config = config,
-                                    pages = ['', 'archive'],
+                                    pages = sitemap_pages,
                                     now = datetime.now(pytz.timezone(config.get('timezone')))
                                     ))

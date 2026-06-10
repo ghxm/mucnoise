@@ -19,18 +19,42 @@ Note: This has been tested with Proton calendars only and is not guaranteed to w
 
 The site can be configured using environment variables (to allow for easy deployment using GitHub Pages). The following variables are available:
 
+Required:
+
 ```
-CAL_URI - The URI of the calendar to use
-CAL_EMAIL - The email address of the calendar to use for invites
-TIMEZONE - The timezone to use for the calendar
-SITE_TITLE - The title of the site
-SITE_URL - The URL of the site
-SITE_DESCRIPTION - The description of the site
-SITE_OWNER_EMAIL - The email address of the site owner
-ALLOW_UNACCEPTED - Whether to allow unaccepted events to be shown
-ALWAYS_ALLOW_SENDERS - A comma-separated list of email addresses whose events are always shown (accepted or not) in json style (e.g. ["test@test.com"])
-RECURRING_EVENTS_DAYS - The number of days to show recurring events for
+CAL_URI              The URI of the iCal feed to use
+CAL_EMAIL            The email address invited to events on the source calendar
+TIMEZONE             IANA timezone name (e.g. Europe/Berlin); required at import time of utils.py
+SITE_OWNER_EMAIL     The email address of the site owner; used to match the owner's PARTSTAT on each event
 ```
+
+Site presentation (optional, used by templates):
+
+```
+SITE_TITLE           Site title shown in the header and <title> tag
+SITE_URL             Canonical site URL (no trailing slash), used in feeds, sitemap, and absolute links
+SITE_DESCRIPTION     Default <meta name="description"> for index and archive
+SITE_KEYWORDS        Optional <meta name="keywords"> content
+SITE_AUTHOR          Optional <meta name="author"> content
+SITE_ABOUT           Optional text shown in the "About" section; falls back to a built-in default if unset
+THEATER_URL          Optional URL displayed as the "Theater" link in the header
+```
+
+Event filtering and parsing (optional):
+
+```
+ALLOW_UNACCEPTED         If true, events the owner has not accepted are still shown. Default: false
+ALWAYS_ALLOW_SENDERS     JSON-style list of email addresses whose events are always shown (e.g. ["test@test.com"]). Default: []
+RECURRING_EVENTS_DAYS    Number of days ahead to expand recurring events. Default: 14
+```
+
+Subset pages (optional):
+
+```
+SUBSET_PAGES_ENABLED     If true, generates per-year (/2026/), per-month (/2026/06/), and per-KW (/2026/W02/) pages, and turns the year and KW labels on index/archive into links. Default: false
+```
+
+All booleans accept `true`/`1`/`t` (case-insensitive) as truthy.
 
 
 You can also prefix the variables with to avoid conflicts with other variables (make sure to set the prefix either in `utils.get_config` directly or whenever retreiving the prefix in `parse_cal.py` and `make_site.py`).

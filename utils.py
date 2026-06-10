@@ -70,9 +70,18 @@ def get_config(prefix="", get_all=False):
     # get recurring events days into the future from environment vars
     config['recurring_events_days'] = float(os.getenv(prefix + 'RECURRING_EVENTS_DAYS', '14'))
 
+    # generate per-year/month/KW subset pages (off by default)
+    config['subset_pages_enabled'] = os.getenv(prefix + 'SUBSET_PAGES_ENABLED', 'False').lower() in ('true', '1', 't')
+
     if get_all:
-        # get all environment variables
-        config.update({key.lower(): val for key, val in dict(os.environ).items() if key.startswith(prefix)})
+        # Surface any other env vars (e.g. SITE_ABOUT) without overwriting
+        # keys we already parsed above — otherwise the parsed booleans get
+        # stomped by their raw string representation ("false" is truthy).
+        config.update({
+            key.lower(): val
+            for key, val in dict(os.environ).items()
+            if key.startswith(prefix) and key[len(prefix):].lower() not in config
+        })
 
     return config
 
