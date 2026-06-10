@@ -230,3 +230,13 @@ td.text span {
     text-decoration: line-through;
 }
 
+/* Year/KW labels are wrapped in <a> when subset pages are enabled.
+   They must look like the plain headings they replace — no color shift,
+   no underline, even on hover or focus. */
+a.text-decoration-none.text-reset,
+a.text-decoration-none.text-reset:hover,
+a.text-decoration-none.text-reset:focus {
+    color: inherit !important;
+    text-decoration: none !important;
+}
+
