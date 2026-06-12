@@ -115,6 +115,7 @@ jobs:
           SITE_ABOUT: ${{ vars.SITE_ABOUT }}
           THEATER_URL: ${{ vars.THEATER_URL }}
           SUBSET_PAGES_ENABLED: ${{ vars.SUBSET_PAGES_ENABLED }}
+          SHOW_ORPHANED_OVERWRITES: ${{ vars.SHOW_ORPHANED_OVERWRITES }}
         run: |
           # Build your site here
           python3 -m venv venv
