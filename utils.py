@@ -73,6 +73,10 @@ def get_config(prefix="", get_all=False):
     # generate per-year/month/KW subset pages (off by default)
     config['subset_pages_enabled'] = os.getenv(prefix + 'SUBSET_PAGES_ENABLED', 'False').lower() in ('true', '1', 't')
 
+    # publish overwrite carrier events as standalone events when their target
+    # is missing from the feed (off by default: orphans are dropped)
+    config['show_orphaned_overwrites'] = os.getenv(prefix + 'SHOW_ORPHANED_OVERWRITES', 'False').lower() in ('true', '1', 't')
+
     if get_all:
         # Surface any other env vars (e.g. SITE_ABOUT) without overwriting
         # keys we already parsed above — otherwise the parsed booleans get
@@ -177,8 +181,10 @@ def clean_yaml_str(text):
     # remove leading and trailing spaces in front of entries
     text = re.sub(r'\n\s+', '\n', text)
 
-    # remove nbsp after colon
-    text = re.sub(r':\s+', ': ', text)
+    # remove nbsp/spaces after colon, but never newlines: collapsing a
+    # newline here would merge an empty-valued key with the next line and
+    # break the whole YAML block
+    text = re.sub(r':[^\S\n]+', ': ', text)
 
     return text
 
@@ -212,7 +218,7 @@ def split_yaml_text(text):
             return yaml_str, text
 
     # hard (without ---)
-    yaml_match = re.findall(r'^[a-z0-9]+:\s.*\n*(?:[ \t]+.*(?:\n|$))*', text, flags=re.MULTILINE)
+    yaml_match = re.findall(r'^[a-z0-9_]+:\s.*\n*(?:[ \t]+.*(?:\n|$))*', text, flags=re.MULTILINE)
 
     yaml_str = ''
     for m in yaml_match:
