@@ -54,6 +54,12 @@ Subset pages (optional):
 SUBSET_PAGES_ENABLED     If true, generates per-year (/2026/), per-month (/2026/06/), and per-KW (/2026/W02/) pages, and turns the year and KW labels on index/archive into links. Default: false
 ```
 
+Overwrite events (optional):
+
+```
+SHOW_ORPHANED_OVERWRITES If true, an overwrite event whose target is no longer in the feed is shown as a normal event instead of being dropped. Default: false
+```
+
 All booleans accept `true`/`1`/`t` (case-insensitive) as truthy.
 
 
@@ -95,6 +101,25 @@ This is a description.
 ### Event invites
 
 The is configured to allow invites to be sent to the event owner. The owner's email address is configured using the `CAL_EMAIL` environment variable. The `ALLOW_UNACCEPTED` environment variable can be used to allow unaccepted events to be shown on the site. If not set, only accepted events will be shown. Additionally, a list of email addresses can be configured using the `ALWAYS_ALLOW_SENDERS` environment variable. Events from these senders will always be shown, regardless of whether they have been accepted or not.
+
+### Overwriting events
+
+Received invitations cannot be edited in most calendar apps (e.g. Proton). To correct an event anyway, create a new event in your own calendar with an `overwrite` property in its description pointing to the uid of the event to correct:
+
+```
+---
+overwrite: <uid>
+---
+```
+
+The uid is the value published in `events.json` (it is also the HTML id of the event's row on the site, without the trailing `-<n>`). The overwrite event itself never appears on the site; instead its attributes are copied onto the target event:
+
+- The title, location, description text, url, and any other YAML properties of the overwrite event replace those of the target, if they are set. Fields left empty are ignored. Since calendar apps require a title, set the title to `__none__` to leave the target's title unchanged (`__none__` works as a "do not copy" marker for any field).
+- The overwrite event's date and time are ignored by default, so it can sit anywhere in your calendar. To move the target event, add `overwrite_time: true` to the YAML and set the overwrite event to the correct start and end. This does not work for recurring targets, since all of their occurrences share one uid.
+- For full control there is `overwrite_<property>: true/false` per property: `false` never copies it, `true` always copies it — including when it is empty, which removes the property from the target (e.g. `overwrite_url: true` with no url deletes the target's url).
+- Recurring targets receive everything except time changes on all occurrences.
+
+To undo a correction, delete the overwrite event. If the target event disappears from the feed while the overwrite event still exists, the overwrite event is dropped as well (see `SHOW_ORPHANED_OVERWRITES` to show it instead).
 
 
 ## Venues
