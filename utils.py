@@ -140,16 +140,72 @@ def path_to_data_folder(filename=None):
     return path_to_folder(filename, 'data/')
 
 
+def _utf8_char_len(b):
+    """Byte length of the UTF-8 character whose lead byte starts `b`."""
+    if not b:
+        return 1
+    lead = b[0]
+    if lead < 0x80:
+        return 1
+    if lead < 0xE0:
+        return 2
+    if lead < 0xF0:
+        return 3
+    return 4
+
+
+def restore_proton_folded_spaces(raw):
+    """Restore spaces destroyed by Proton's ICS line folding.
+
+    Proton folds content lines greedily at exactly 75 octets. When the fold
+    boundary lands on a space, Proton sometimes moves that content space to
+    the continuation line where it doubles as the fold marker, so RFC 5545
+    unfolding deletes it ("Jazz für alle" becomes "Jazz füralle"). The only
+    legitimate reason for a fold line shorter than 75 octets is a multi-byte
+    character that would not fit, so a short fold line whose next character
+    would still have fit means the marker space was content: unfold it to a
+    space instead of nothing.
+
+    Proton-specific by design: applied only when the PRODID is Proton's and
+    the feed's dominant fold length is exactly 75 octets. Anything else is
+    returned unchanged for icalendar's standard unfolding.
+    """
+    if b'//Proton' not in raw[:2048]:
+        return raw
+
+    lines = raw.split(b'\r\n')
+    fold_lens = [len(l) for l, nxt in zip(lines, lines[1:]) if nxt[:1] in (b' ', b'\t')]
+    if not fold_lens:
+        return raw
+    modal = max(set(fold_lens), key=fold_lens.count)
+    if modal != 75:
+        return raw
+
+    out = []
+    prev_len = None
+    for line in lines:
+        if out and line[:1] in (b' ', b'\t'):
+            cont = line[1:]
+            if line[:1] == b' ' and prev_len is not None and prev_len + _utf8_char_len(cont) <= 75:
+                out[-1] += b' ' + cont
+            else:
+                out[-1] += cont
+        else:
+            out.append(line)
+        prev_len = len(line)
+    return b'\r\n'.join(out)
+
+
 def read_cal(ics):
     if ics.startswith('http'):
-        ics_string = requests.get(ics).text
+        ics_raw = requests.get(ics).content
     else:
         try:
-            ics_string = open(ics).read()
+            ics_raw = open(ics, 'rb').read()
         except FileNotFoundError:
-            ics_string = ics
+            ics_raw = ics.encode('utf-8')
 
-    cal = icalendar.Calendar.from_ical(ics_string)
+    cal = icalendar.Calendar.from_ical(restore_proton_folded_spaces(ics_raw))
 
     return cal
 
