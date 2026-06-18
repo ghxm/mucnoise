@@ -30,6 +30,38 @@ template = env.get_template('index.j2')
 sitemap_template = env.get_template('sitemap.j2')
 
 
+def _flatten_schedule(aggregated):
+    """Walk an aggregated year->kw->date->[events] dict back into a flat list."""
+    return [ev
+            for year in aggregated.values()
+            for kw in year.values()
+            for day in kw.values()
+            for ev in day]
+
+
+def latest_change(events):
+    """Most recent real change time across events, for an honest sitemap lastmod.
+
+    Prefers last_modified, falling back to created, then start. Returns a
+    tz-aware datetime or None when no event carries a usable timestamp.
+    """
+    times = []
+    for e in events:
+        raw = e.get('last_modified') or e.get('created') or e.get('start')
+        if not raw:
+            continue
+        try:
+            times.append(utils.ensure_tz(datetime.fromisoformat(raw), config.get('timezone')))
+        except (ValueError, TypeError):
+            continue
+    return max(times) if times else None
+
+
+def _w3c(dt):
+    """Format a tz-aware datetime as a W3C/sitemap timestamp, or None."""
+    return dt.isoformat(timespec='seconds') if dt is not None else None
+
+
 # read in schedule
 schedule_str = open(schedule_path, 'r').read()
 
@@ -264,7 +296,10 @@ with open('site/index.html', 'w') as f:
 # Each subset page shows past + future combined for its period, reusing
 # templates/index.j2 with a `subset_view` context dict.
 
-sitemap_pages = ['', 'archive']
+sitemap_pages = [
+    {'path': '', 'lastmod': _w3c(latest_change(_flatten_schedule(schedules['schedule'])))},
+    {'path': 'archive', 'lastmod': _w3c(latest_change(_flatten_schedule(schedules['archive_schedule'])))},
+]
 
 if config.get('subset_pages_enabled'):
 
@@ -354,7 +389,7 @@ if config.get('subset_pages_enabled'):
     def _render_subset(filter_fn, subset_view, out_path):
         filtered = [e for e in all_events_exploded if filter_fn(e)]
         if not filtered:
-            return
+            return None
 
         aggregated = utils.aggregate_schedule(filtered, groups=['kw_year', 'kw', 'date'])
 
@@ -401,34 +436,47 @@ if config.get('subset_pages_enabled'):
                 subset_view=subset_view,
             ))
 
+        return latest_change(filtered)
+
+    def _add_subset_page(path, lastmod):
+        # Only list a page in the sitemap when _render_subset actually wrote it
+        # (it returns None and skips when no events match the filter).
+        if lastmod is not None:
+            sitemap_pages.append({'path': path, 'lastmod': _w3c(lastmod)})
+
     for y in subset_years:
-        _render_subset(
+        lm = _render_subset(
             filter_fn=lambda e, y=y: e.get('kw_year') == y,
             subset_view=_build_subset_view('year', year=y),
             out_path='site/{}/index.html'.format(y),
         )
-        sitemap_pages.append('{}/'.format(y))
+        _add_subset_page('{}/'.format(y), lm)
 
     for y, m in subset_months:
-        _render_subset(
+        lm = _render_subset(
             filter_fn=lambda e, y=y, m=m: e['_cal_year'] == y and e['_cal_month'] == m,
             subset_view=_build_subset_view('month', year=y, month=m),
             out_path='site/{}/{}/index.html'.format(y, m),
         )
-        sitemap_pages.append('{}/{}/'.format(y, m))
+        _add_subset_page('{}/{}/'.format(y, m), lm)
 
     for y, k in subset_kws:
-        _render_subset(
+        lm = _render_subset(
             filter_fn=lambda e, y=y, k=k: e['kw_year'] == y and e['kw'] == k,
             subset_view=_build_subset_view('kw', year=y, kw=k),
             out_path='site/{}/W{}/index.html'.format(y, k),
         )
-        sitemap_pages.append('{}/W{}/'.format(y, k))
+        _add_subset_page('{}/W{}/'.format(y, k), lm)
 
 
 # generate sitemap
 with open('site/sitemap.xml', 'w') as f:
     f.write(sitemap_template.render(config = config,
                                     pages = sitemap_pages,
-                                    now = datetime.now(pytz.timezone(config.get('timezone')))
+                                    default_lastmod = _w3c(datetime.now(pytz.timezone(config.get('timezone'))))
                                     ))
+
+# generate robots.txt pointing crawlers at the sitemap
+with open('site/robots.txt', 'w') as f:
+    f.write('User-agent: *\nAllow: /\n\nSitemap: {}/sitemap.xml\n'.format(
+        config.get('site_url', '').rstrip('/')))
