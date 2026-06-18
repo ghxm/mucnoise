@@ -470,9 +470,12 @@ if config.get('subset_pages_enabled'):
 
 
 # generate sitemap
+# `now` is still passed because the github-pages branch's sitemap.j2 carries an
+# extra hardcoded theater URL block that references it (content branches diverge).
 with open('site/sitemap.xml', 'w') as f:
     f.write(sitemap_template.render(config = config,
                                     pages = sitemap_pages,
+                                    now = datetime.now(pytz.timezone(config.get('timezone'))),
                                     default_lastmod = _w3c(datetime.now(pytz.timezone(config.get('timezone'))))
                                     ))
 
