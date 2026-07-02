@@ -77,7 +77,12 @@ You can also prefix the variables with to avoid conflicts with other variables (
 
 ### Event properties
 
-Properties for events can be set in YAML format using the event description in the calendar. Currently, only the url property is supported. In the future this may be extended to allow for more properties (categories, ticket price, accessibility).
+Properties for events can be set in YAML format using the event description in the calendar. Currently, the following properties are supported:
+
+- `url` — link shown for the event.
+- `hidden` — if `true`, the event is dropped from the site and all feeds.
+
+In the future this may be extended to allow for more properties (categories, ticket price, accessibility).
 
 Example:
 
@@ -118,6 +123,7 @@ The uid is the value published in `events.json` (it is also the HTML id of the e
 - The overwrite event's date and time are ignored by default, so it can sit anywhere in your calendar. To move the target event, add `overwrite_time: true` to the YAML and set the overwrite event to the correct start and end. This does not work for recurring targets, since all of their occurrences share one uid.
 - For full control there is `overwrite_<property>: true/false` per property: `false` never copies it, `true` always copies it — including when it is empty, which removes the property from the target (e.g. `overwrite_url: true` with no url deletes the target's url).
 - Recurring targets receive everything except time changes on all occurrences.
+- To hide a received event entirely, add `hidden: true` to the overwrite event's YAML. To un-hide it again, set `hidden: false` (or delete the overwrite event).
 
 To undo a correction, delete the overwrite event. If the target event disappears from the feed while the overwrite event still exists, the overwrite event is dropped as well (see `SHOW_ORPHANED_OVERWRITES` to show it instead).
 

@@ -252,6 +252,32 @@ def apply_overwrites(events, show_orphaned=False):
     return out
 
 
+def drop_hidden(events):
+    """Drop events whose description YAML sets `hidden: true`.
+
+    Runs after apply_overwrites so a carrier can hide its target
+    (`hidden: true`) or un-hide it (`hidden: false` / `overwrite_hidden: true`
+    with no value). A non-true `hidden` key is stripped from the event so it
+    never appears in any output.
+    """
+    kept = []
+    hidden_count = 0
+    for e in events:
+        extras = e.model_extra or {}
+        if 'hidden' in extras:
+            if _as_bool(extras['hidden']):
+                hidden_count += 1
+                logger.info("event_hidden", extra={"uid": e.uid})
+                continue
+            data = e.model_dump()
+            data.pop('hidden', None)
+            e = Event.model_validate(data)
+        kept.append(e)
+    if hidden_count:
+        logger.info("dropped_hidden_events", extra={"count": hidden_count})
+    return kept
+
+
 def _dump(event):
     # The old parser omitted last_modified when missing rather than emitting
     # null. Drop it here to keep the JSON/CSV/ICS/RSS output keys identical.
@@ -288,6 +314,8 @@ if __name__ == '__main__':
     logger.info("parsed_events", extra={"count": len(events)})
 
     events = apply_overwrites(events, show_orphaned=config.get('show_orphaned_overwrites', False))
+
+    events = drop_hidden(events)
 
     event_dicts = [_dump(e) for e in events]
 
