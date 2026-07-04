@@ -77,6 +77,10 @@ def get_config(prefix="", get_all=False):
     # is missing from the feed (off by default: orphans are dropped)
     config['show_orphaned_overwrites'] = os.getenv(prefix + 'SHOW_ORPHANED_OVERWRITES', 'False').lower() in ('true', '1', 't')
 
+    # generated footer wordmark + logo gallery (off by default)
+    config['footer_logo_enabled'] = os.getenv(prefix + 'FOOTER_LOGO_ENABLED', 'False').lower() in ('true', '1', 't')
+    config['footer_logo_text'] = os.getenv(prefix + 'FOOTER_LOGO_TEXT', config.get('site_title'))
+
     if get_all:
         # Surface any other env vars (e.g. SITE_ABOUT) without overwriting
         # keys we already parsed above — otherwise the parsed booleans get
