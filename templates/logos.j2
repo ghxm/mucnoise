@@ -1,0 +1,54 @@
+{% extends 'base.j2' %}
+
+{% block head %}
+    <meta name="robots" content="noindex">
+    <title>logos – {{ config.get('site_title') }}</title>
+{% endblock %}
+
+{% block head_extra %}
+    <style>
+        .gallery-logo { height: 5rem; width: auto; margin: 0 .75rem .75rem 0; }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div id="row-top" class="row my-2">
+        <div class='d-flex justify-content-end'>
+                <a href="{{ config.get('site_url') }}" class="btn me-2 btn-outline-primary btn-sm"><< upcoming</a>
+        </div>
+    </div>
+
+    {% for year in gallery.keys() %}
+    <div class="row" id="year-{{ year }}">
+        <p class="h5">{{ year }}</p>
+
+        {% for kw in gallery[year].keys() %}
+        <div class="row" id="kw-{{ kw }}">
+            <div class="col-12 col-xl-1 h5 pe-0">KW {{ kw }}</div>
+            <div class="col-12 col-xl-11">
+
+                {% for day in gallery[year][kw].keys() %}
+                <div class="row" id="date-{{ day }}">
+                    <div class="col-12 col-lg-2">
+                        <p class="h5 text-nowrap">
+                            {% if day == today %}<span>Today</span>{% else %}{{ gallery_date_weekdays[day][:3] }}{% endif %}, {{ day }}
+                        </p>
+                    </div>
+                    <div class="ps-0 ps-lg-4 col-12 col-lg-10">
+                        <div class="row mb-5">
+                            <div class="d-flex flex-wrap ms-3">
+                                {% for logo in gallery[year][kw][day] %}
+                                <img src="/logos/{{ logo.file }}" title="{{ logo.time }}" alt="{{ config.get('footer_logo_text') }} {{ day }} {{ logo.time }}" class="gallery-logo">
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+{% endblock %}

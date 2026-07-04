@@ -1,4 +1,8 @@
 import calendar
+import glob
+import importlib.util
+import re
+import tarfile
 import jinja2
 import utils
 import os
@@ -6,6 +10,8 @@ import json
 from datetime import datetime, timedelta, date
 import pytz
 import shutil
+import tempfile
+import urllib.request
 import warnings
 import yaml
 import markdown
@@ -28,6 +34,29 @@ env.globals['kw_url'] = lambda y, k: '/{}/W{}/'.format(y, k)
 # Load a template
 template = env.get_template('index.j2')
 sitemap_template = env.get_template('sitemap.j2')
+
+
+# Footer wordmark SVG, generated per build by the pen-font-gen gist with the
+# build datetime as seed. The seed is embedded in the SVG's provenance comment.
+PEN_FONT_GEN_URL = ('https://gist.githubusercontent.com/ghxm/'
+                    'af1616fc2d8b12f1823ad5e88eb309e0/raw/pen-font-gen.py')
+
+
+def generate_footer_svg(now, out_path):
+    """Generate the footer wordmark SVG. Returns the seed string on success."""
+    script_path = os.path.join(tempfile.gettempdir(), 'pen_font_gen.py')
+    urllib.request.urlretrieve(PEN_FONT_GEN_URL, script_path)
+    spec = importlib.util.spec_from_file_location('pen_font_gen', script_path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    seed = now.strftime('%Y%m%d%H%M%S')
+    with tempfile.TemporaryDirectory() as tmp:
+        mod.main(['--text', config.get('footer_logo_text'), '--n', '1',
+                  '--seed', seed, '--out', tmp])
+        svg = glob.glob(os.path.join(tmp, '*.svg'))[0]
+        shutil.copyfile(svg, out_path)
+    return seed
 
 
 def _flatten_schedule(aggregated):
@@ -162,6 +191,112 @@ site_folder = utils.path_to_site_folder()
 
 for f in data:
     shutil.copyfile(utils.path_to_data_folder(f), os.path.join(site_folder, f))
+
+
+# FOOTER LOGO + GALLERY (optional, FOOTER_LOGO_ENABLED)
+if config.get('footer_logo_enabled'):
+
+    build_now = datetime.now(pytz.timezone(config.get('timezone')))
+    site_url = config.get('site_url').rstrip('/')
+
+    # generate the footer SVG; a failure must not break the build: keep an
+    # existing footer.svg, else fetch the currently deployed one, else the
+    # templates omit the footer via their path_exists guard
+    footer_svg_path = os.path.join(site_folder, 'footer.svg')
+    footer_seed = None
+    try:
+        footer_seed = generate_footer_svg(build_now, footer_svg_path)
+    except Exception as e:
+        warnings.warn('footer.svg generation failed ({}), falling back'.format(e))
+        if not os.path.exists(footer_svg_path):
+            try:
+                urllib.request.urlretrieve(site_url + '/footer.svg', footer_svg_path)
+            except Exception as e:
+                warnings.warn('footer.svg fallback download failed ({}), footer omitted'.format(e))
+
+    # 30-day rolling backlog of generated logos; lives only on the deployed
+    # site: inherit the live manifest + tarball, prune, add this build's logo
+    logos_folder = os.path.join(site_folder, 'logos')
+    os.makedirs(logos_folder, exist_ok=True)
+    manifest_path = os.path.join(logos_folder, 'manifest.json')
+
+    logos = []
+    try:
+        with urllib.request.urlopen(site_url + '/logos/manifest.json') as resp:
+            logos = json.loads(resp.read().decode('utf-8'))
+    except Exception as e:
+        warnings.warn('live logo manifest unavailable ({}), trying local'.format(e))
+        if os.path.exists(manifest_path):
+            with open(manifest_path) as f:
+                logos = json.load(f)
+
+    missing = {l['file'] for l in logos if not os.path.exists(os.path.join(logos_folder, l['file']))}
+    if missing:
+        try:
+            tar_tmp = os.path.join(tempfile.gettempdir(), 'logos.tar.gz')
+            urllib.request.urlretrieve(site_url + '/logos/logos.tar.gz', tar_tmp)
+            with tarfile.open(tar_tmp, 'r:gz') as tar:
+                for member in tar.getmembers():
+                    name = os.path.basename(member.name)
+                    if member.isfile() and name in missing and re.fullmatch(r'\d{14}\.svg', name):
+                        with open(os.path.join(logos_folder, name), 'wb') as f:
+                            f.write(tar.extractfile(member).read())
+        except Exception as e:
+            warnings.warn('logo tarball unavailable ({})'.format(e))
+
+    # keep only entries inside the window whose file is actually present
+    cutoff = build_now - timedelta(days=30)
+    kept = []
+    for logo in logos:
+        logo_path = os.path.join(logos_folder, logo['file'])
+        if datetime.fromisoformat(logo['datetime']) >= cutoff and os.path.exists(logo_path):
+            kept.append(logo)
+        elif os.path.exists(logo_path):
+            os.remove(logo_path)
+    logos = kept
+
+    # only a freshly generated logo is added; a fallback footer is already
+    # part of the backlog
+    if footer_seed is not None:
+        shutil.copyfile(footer_svg_path, os.path.join(logos_folder, footer_seed + '.svg'))
+        logos.append({'file': footer_seed + '.svg', 'datetime': build_now.isoformat()})
+
+    with open(manifest_path, 'w') as f:
+        json.dump(logos, f)
+    with tarfile.open(os.path.join(logos_folder, 'logos.tar.gz'), 'w:gz') as tar:
+        for logo in logos:
+            tar.add(os.path.join(logos_folder, logo['file']), arcname=logo['file'])
+
+    # gallery page, calendar-shaped: year -> KW -> date, newest first
+    if logos:
+        entries = []
+        for logo in logos:
+            dt = utils.ensure_tz(datetime.fromisoformat(logo['datetime']), config.get('timezone'))
+            entries.append({'file': logo['file'],
+                            'datetime': logo['datetime'],
+                            'time': dt.strftime('%H:%M'),
+                            'date': utils.ymd_string(dt),
+                            'kw': utils.get_weeknum(dt),
+                            'kw_year': utils.get_weeknum_year(dt)})
+
+        gallery = utils.aggregate_schedule(entries, groups=['kw_year', 'kw', 'date'])
+        gallery = {year: {kw: {day: sorted(gallery[year][kw][day], key=lambda x: x['datetime'], reverse=True)
+                               for day in sorted(gallery[year][kw].keys(), reverse=True)}
+                          for kw in sorted(gallery[year].keys(), reverse=True)}
+                   for year in sorted(gallery.keys(), reverse=True)}
+
+        gallery_date_weekdays = {e['date']: utils.get_weekday(utils.make_date(e['date'], tz=config.get('timezone')))
+                                 for e in entries}
+
+        with open(os.path.join(logos_folder, 'index.html'), 'w') as f:
+            f.write(env.get_template('logos.j2').render(config=config,
+                                                        gallery=gallery,
+                                                        gallery_date_weekdays=gallery_date_weekdays,
+                                                        dict_has_key=utils.dict_has_key,
+                                                        today=utils.get_today(),
+                                                        now=build_now))
+    else:
+        warnings.warn('no logos available, gallery not rendered')
 
 
 
