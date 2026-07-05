@@ -23,7 +23,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 {%- if config.get('footer_logo_enabled') %}
     <style>
-        #footer-mark { display: block; margin: 2rem auto 1rem; width: 90%; height: auto; }
+        #footer-mark { display: block; margin: 2rem auto 1rem; width: 90%; }
+        #footer-mark svg { display: block; width: 100%; height: auto; }
         @media (min-width: 768px) { #footer-mark { width: 33%; } }
     </style>
 {%- endif %}
@@ -437,12 +438,12 @@
     </p>
 </div>
 
-{% if config.get('footer_logo_enabled') and path_exists('site/footer.svg') %}
+{% if config.get('footer_logo_enabled') and footer_svg %}
 <footer class="text-center">
     {% if path_exists('site/logos/index.html') %}
-    <a href="/logos/" class="text-decoration-none"><img id="footer-mark" src="/footer.svg" alt="{{ config.get('footer_logo_text') }}"></a>
+    <a href="/logos/" id="footer-mark" class="text-decoration-none" aria-label="{{ config.get('footer_logo_text') }} logo gallery">{{ footer_svg }}</a>
     {% else %}
-    <img id="footer-mark" src="/footer.svg" alt="{{ config.get('footer_logo_text') }}">
+    <span id="footer-mark">{{ footer_svg }}</span>
     {% endif %}
 </footer>
 {% endif %}
