@@ -217,6 +217,17 @@ if config.get('footer_logo_enabled'):
             except Exception as e:
                 warnings.warn('footer.svg fallback download failed ({}), footer omitted'.format(e))
 
+    # inline the SVG into the pages: browsers rasterize SVG filters poorly
+    # inside <img> (especially Safari on high-DPI screens), inline markup
+    # renders them at device resolution; root width/height attrs are dropped
+    # so the footer CSS controls the size via viewBox scaling
+    if os.path.exists(footer_svg_path):
+        with open(footer_svg_path) as f:
+            svg_markup = f.read()
+        svg_markup = re.sub(r'<\?xml[^?]*\?>\s*', '', svg_markup, count=1)
+        svg_markup = re.sub(r'(<svg\b[^>]*?)\s+width="[^"]*"\s+height="[^"]*"', r'\1', svg_markup, count=1)
+        env.globals['footer_svg'] = svg_markup
+
     # 30-day rolling backlog of generated logos; lives only on the deployed
     # site: inherit the live manifest + tarball, prune, add this build's logo
     logos_folder = os.path.join(site_folder, 'logos')

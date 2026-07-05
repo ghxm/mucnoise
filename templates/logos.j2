@@ -38,7 +38,7 @@
                         <div class="row mb-5">
                             <div class="d-flex flex-wrap ms-3">
                                 {% for logo in gallery[year][kw][day] %}
-                                <img src="/logos/{{ logo.file }}" title="{{ logo.time }}" alt="{{ config.get('footer_logo_text') }} {{ day }} {{ logo.time }}" class="gallery-logo">
+                                <a href="/logos/{{ logo.file }}" target="_blank"><img src="/logos/{{ logo.file }}" title="{{ logo.time }}" alt="{{ config.get('footer_logo_text') }} {{ day }} {{ logo.time }}" class="gallery-logo" loading="lazy"></a>
                                 {% endfor %}
                             </div>
                         </div>
