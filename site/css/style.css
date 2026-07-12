@@ -230,6 +230,31 @@ td.text span {
     text-decoration: line-through;
 }
 
+/* Top menu: vertically centered button labels, breathing room around the
+   menu line, taller tap targets on mobile. */
+#row-top {
+    margin-top: .75rem;
+    margin-bottom: 1rem;
+}
+
+#row-top .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 767.98px) {
+    #row-top {
+        margin-top: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    #row-top .btn {
+        padding-top: .45rem;
+        padding-bottom: .45rem;
+    }
+}
+
 /* Year/KW labels are wrapped in <a> when subset pages are enabled.
    They must look like the plain headings they replace — no color shift,
    no underline, even on hover or focus. */
