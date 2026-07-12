@@ -35,20 +35,20 @@
 {% block content %}
 {% set VARS = namespace(last_printed_date=None) %}
 
-    <div id="row-top" class="row my-2">
+    <div id="row-top" class="row">
         <div class='d-flex justify-content-end'>
         {%  if archive or subset_view %}
-                        <a href="{{ config.get('site_url') }}" class="btn me-2 btn-outline-primary btn-sm"><< upcoming</a>
+                        <a href="{{ config.get('site_url') }}" class="btn me-2 btn-outline-primary btn-sm"><span class="d-none d-md-inline"><<&nbsp;</span>upcoming</a>
         {% endif %}
         {% if not archive and not subset_view and path_exists('site/archive.html') %}
-                <a href="/archive" class="btn me-2 btn-outline-primary btn-sm">archive >></a>
+                <a href="/archive" class="btn me-2 btn-outline-primary btn-sm">archive<span class="d-none d-md-inline">&nbsp;>></span></a>
         {% endif %}
             <a href="#venues" class="btn me-2 btn-outline-primary btn-sm">venues</a>
             {% if news and news|length > 0 %}
                 <a href="#news" class="btn me-2 btn-outline-primary btn-sm">news</a>
             {% endif %}
             <!---<a href="#info" class="btn me-2 btn-outline-primary btn-sm">info</a>--->
-            <a href="#howto" class="btn me-2 btn-outline-danger btn-sm">suggest an event!</a>
+            <a href="#howto" class="btn me-2 btn-outline-danger btn-sm">suggest<span class="d-none d-md-inline">&nbsp;an event</span>!</a>
             {%  if path_exists('site/events.ics') %}
                     <a  href="/events.ics" class="btn me-2 btn-outline-secondary btn-sm d-none d-md-block">.ics</a>
             {% endif %}
