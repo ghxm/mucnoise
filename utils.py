@@ -70,6 +70,9 @@ def get_config(prefix="", get_all=False):
     # get recurring events days into the future from environment vars
     config['recurring_events_days'] = float(os.getenv(prefix + 'RECURRING_EVENTS_DAYS', '14'))
 
+    # max characters of an event description shown on the site (longer text is truncated)
+    config['description_max_length'] = int(os.getenv(prefix + 'DESCRIPTION_MAX_LENGTH') or 300)
+
     # generate per-year/month/KW subset pages (off by default)
     config['subset_pages_enabled'] = os.getenv(prefix + 'SUBSET_PAGES_ENABLED', 'False').lower() in ('true', '1', 't')
 
