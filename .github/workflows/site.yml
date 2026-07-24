@@ -118,6 +118,7 @@ jobs:
           SHOW_ORPHANED_OVERWRITES: ${{ vars.SHOW_ORPHANED_OVERWRITES }}
           FOOTER_LOGO_ENABLED: ${{ vars.FOOTER_LOGO_ENABLED }}
           FOOTER_LOGO_TEXT: ${{ vars.FOOTER_LOGO_TEXT }}
+          DESCRIPTION_MAX_LENGTH: ${{ vars.DESCRIPTION_MAX_LENGTH }}
         run: |
           # Build your site here
           python3 -m venv venv
