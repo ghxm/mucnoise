@@ -103,6 +103,11 @@ def _build_patch(carrier):
     overwrite_time = controls.pop('time', False)
 
     candidates = {f: getattr(carrier, f) for f in DEFAULT_PATCH_FIELDS}
+    # `cancelled` is a declared model field, so it never appears in extras.
+    # An explicit overwrite_cancelled control propagates the carrier's own
+    # cancelled state (false unless the carrier YAML sets `cancelled: true`).
+    if 'cancelled' in controls:
+        candidates['cancelled'] = carrier.cancelled
     candidates.update(extras)
 
     set_values = {}
