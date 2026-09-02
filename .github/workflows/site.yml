@@ -4,7 +4,7 @@ name: Generate site and deploy content to Pages
 on:
   schedule:
     - cron: "*/13 * * * *"  # Every 13 minutes - calendar check
-    - cron: "1 * * * *"     # Every hour at 1 minute past - always rebuild
+    - cron: "37 * * * *"    # Every hour at 37 minutes past - always rebuild
   # Runs on pushes targeting the default branch
   push:
     branches:
@@ -91,7 +91,7 @@ jobs:
       always() && (
         github.event_name != 'schedule' ||
         needs.check-calendar-changes.outputs.calendar-changed == 'true' ||
-        startsWith(github.event.schedule, '1 ')
+        startsWith(github.event.schedule, '37 ')
       )
     steps:
       - name: Checkout
