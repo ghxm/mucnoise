@@ -1,10 +1,13 @@
 import json
 import logging
+import os
+import time
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 import pytz
 import recurring_ical_events
+import requests
 
 import utils
 from event import Event, _derive_date_fields
@@ -283,6 +286,105 @@ def drop_hidden(events):
     return kept
 
 
+# First-seen dates. The Proton export sets every event's DTSTAMP to the
+# render time, so `created` is kept as the earliest value ever recorded for a
+# uid: the minimum over the seed file, the previously deployed events.json and
+# the freshly parsed value. Values are stored as aware UTC datetimes.
+SEED_CREATED_FILENAME = '.created_seed.json'
+
+
+def _as_utc(v, tz):
+    """Normalize a date or naive/aware datetime to an aware UTC datetime."""
+    if isinstance(v, datetime):
+        v = utils.ensure_tz(v, tz)
+    else:
+        v = utils.make_datetime(v, '00:00', tz)
+    return v.astimezone(pytz.utc)
+
+
+def _previous_created_from_rows(rows, tz):
+    """Map uid -> earliest `created` (UTC) from event dicts holding isoformat strings."""
+    previous = {}
+    for row in rows:
+        uid = row.get('uid')
+        raw = row.get('created')
+        if not uid or not raw:
+            continue
+        try:
+            value = date.fromisoformat(raw) if len(raw) == 10 else datetime.fromisoformat(raw)
+            value = _as_utc(value, tz)
+        except (ValueError, TypeError):
+            continue
+        if uid not in previous or value < previous[uid]:
+            previous[uid] = value
+    return previous
+
+
+def _merge_earliest(base, extra):
+    """Merge two uid -> datetime maps, keeping the earlier value per uid."""
+    merged = dict(base)
+    for uid, value in extra.items():
+        if uid not in merged or value < merged[uid]:
+            merged[uid] = value
+    return merged
+
+
+def fetch_previous_feed(site_url, attempts=3, timeout=30, retry_wait=5):
+    """Return the deployed events.json rows, [] when the site has none yet (404),
+    or None when it could not be fetched."""
+    url = site_url.rstrip('/') + '/events.json'
+    error = None
+    for attempt in range(attempts):
+        try:
+            resp = requests.get(url, timeout=timeout)
+            if resp.status_code == 404:
+                return []
+            resp.raise_for_status()
+            rows = resp.json()
+            if not isinstance(rows, list):
+                raise ValueError('events.json is not a list')
+            return rows
+        except Exception as e:
+            error = e
+            if attempt < attempts - 1:
+                time.sleep(retry_wait)
+    logger.warning("previous_feed_unavailable", extra={"url": url, "error": str(error)})
+    return None
+
+
+def load_seed_created(path, tz):
+    """Read the committed seed of first-seen dates ({uid: isoformat}), if present."""
+    if not os.path.exists(path):
+        return {}
+    with open(path) as f:
+        seed = json.load(f)
+    return _previous_created_from_rows(
+        [{'uid': uid, 'created': raw} for uid, raw in seed.items()], tz)
+
+
+def check_not_shrunk(events, previous_rows, min_ratio=0.5):
+    """Refuse to publish a feed that lost more than half of the deployed events
+    (a partial Proton export would otherwise wipe the archive)."""
+    if previous_rows and len(events) < min_ratio * len(previous_rows):
+        raise ValueError(
+            'Parsed {} events but the live feed has {}; refusing to publish a partial export'
+            .format(len(events), len(previous_rows)))
+
+
+def carry_forward_created(events, previous, tz):
+    """Set each event's `created` to the earlier previously recorded value, if any."""
+    updated = 0
+    for e in events:
+        prev = previous.get(e.uid)
+        if prev is None:
+            continue
+        if e.created is None or prev < _as_utc(e.created, tz):
+            e.created = prev
+            updated += 1
+    logger.info("carried_forward_created", extra={"updated": updated, "total": len(events)})
+    return events
+
+
 def _dump(event):
     # The old parser omitted last_modified when missing rather than emitting
     # null. Drop it here to keep the JSON/CSV/ICS/RSS output keys identical.
@@ -321,6 +423,16 @@ if __name__ == '__main__':
     events = apply_overwrites(events, show_orphaned=config.get('show_orphaned_overwrites', False))
 
     events = drop_hidden(events)
+
+    tz = config.get('timezone')
+    site_url = config.get('site_url')
+    previous_rows = fetch_previous_feed(site_url) if site_url else None
+    previous = _merge_earliest(
+        _previous_created_from_rows(previous_rows or [], tz),
+        load_seed_created(utils.path_to_data_folder(SEED_CREATED_FILENAME), tz),
+    )
+    check_not_shrunk(events, previous_rows)
+    events = carry_forward_created(events, previous, tz)
 
     event_dicts = [_dump(e) for e in events]
 
