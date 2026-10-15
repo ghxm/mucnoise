@@ -166,7 +166,7 @@ def _time_patch(carrier):
 
 
 def _bump_last_modified(target, carrier):
-    """RSS readers honor <updated>; reflect carrier edits on the patched event."""
+    """Reflect carrier edits in the patched event's last_modified (published in JSON and ICS)."""
     try:
         if carrier.last_modified is None:
             return {}
@@ -391,6 +391,7 @@ def _dump(event):
     d = event.model_dump()
     if d.get('last_modified') is None:
         d.pop('last_modified', None)
+    d['url'] = utils.normalize_url(d.get('url'))
     return d
 
 

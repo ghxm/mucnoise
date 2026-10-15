@@ -1,3 +1,4 @@
+import html
 import re
 import requests
 import yaml
@@ -395,65 +396,142 @@ def schedule_to_csv(schedule):
     return csv
 
 
+def normalize_url(url):
+    """Return the URL stripped and with a scheme, or None when empty."""
+    if url is None:
+        return None
+    url = str(url).strip()
+    if not url:
+        return None
+    if url.startswith('//'):
+        return 'https:' + url
+    if not re.match(r'^[A-Za-z][A-Za-z0-9+.\-]*:', url):
+        return 'https://' + url
+    return url
+
+
+_CONTROL_CHARS = re.compile(r'[\x00-\x08\x0b\x0c\x0e-\x1f]')
+_BARE_AMP = re.compile(r'&(?![#\w]+;)')
+_BR_TAG = re.compile(r'<br\s*/?>', re.I)
+
+
+def _strip_control_chars(text):
+    return _CONTROL_CHARS.sub('', text)
+
+
+def _plain_text(html_text):
+    """Description HTML as single-line plain text."""
+    text = remove_html_tags(_BR_TAG.sub(' ', html_text))
+    return re.sub(r'\s+', ' ', html.unescape(text)).strip()
+
+
+def _escape_bare_amp(html_text):
+    return _BARE_AMP.sub('&amp;', html_text)
+
+
+def _truncate_words(text, limit=160):
+    if len(text) <= limit:
+        return text
+    cut = text[:limit].rsplit(' ', 1)[0] or text[:limit]
+    return cut + '…'
+
+
 def schedule_to_rss(schedule, author_email=get_config().get('site_owner_email', ''),
                     url=get_config().get('site_url', ''), title=get_config().get('site_title', ''),
-                    content=get_config().get('site_description', ''), tz=get_config().get('timezone', 'Europe/Berlin')):
+                    content=get_config().get('site_description', ''), tz=get_config().get('timezone', 'Europe/Berlin'),
+                    now=None):
+    """Upcoming events as an RSS 2.0 feed, newest-added first. `now` is only overridden in tests."""
     if not str(url).endswith('/'):
         url += '/'
+    url = str(url)
+    tz_name = str(tz)
+    tz = pytz.timezone(tz_name)
 
-    if not isinstance(tz, timezone):
-        tz = pytz.timezone(tz)
+    def local(v):
+        if isinstance(v, datetime):
+            return ensure_tz(v, tz_name)
+        return make_datetime(v, '00:00', tz_name)
+
+    # Same "upcoming" rule as make_site.py / remove_events: ends at or after now + 2 h, or starts on the cutoff's day.
+    now = now.astimezone(tz) if now is not None else datetime.now(tz)
+    cutoff = now + timedelta(hours=2)
+    items = [e for e in schedule if local(e['end']) >= cutoff or local(e['start']).date() == cutoff.date()]
+    items.sort(key=lambda e: local(e['start']))
+    items.sort(key=lambda e: local(e['created']).timestamp() if e.get('created') is not None else float('-inf'),
+               reverse=True)
 
     fg = FeedGenerator()
-    fg.id(str(url))
     fg.title(str(title))
     fg.description(str(content))
     fg.author({'name': str(title), 'email': str(author_email)})
-    fg.link(href=str(url) + 'static/events.rss', rel='self')
+    fg.link(href=url + 'events.rss', rel='self')
+    fg.link(href=url, rel='alternate')  # feedgen uses the last link as the channel <link>
     fg.language('en')
-    fg.lastBuildDate(datetime.now(tz))
+    fg.lastBuildDate(now)
 
-    for event in schedule:
+    for event in items:
+        start, end = local(event['start']), local(event['end'])
+        all_day = bool(event.get('all_day'))
+        longer_than_a_day = (event.get('duration_seconds') or 0) > 86400
+        shown_end = end - timedelta(days=1) if all_day else end  # all-day end is exclusive
+        day = event.get('date') or start.strftime('%Y-%m-%d')
+        # The site splits events longer than a day into one row per day; link the first row still shown.
+        anchor_day = max(start.date(), now.date()).strftime('%Y-%m-%d') if longer_than_a_day else day
+        location = event.get('location')
+        event_url = normalize_url(event.get('url'))
+        site_link = url + '#' + str(event['uid']) + '-' + anchor_day
 
-        fe = fg.add_entry()
-        fe.guid(str(event['uid']))
-        fe.title(str(event.get('date')) + ': ' + str(event.get('title', '')))
-        fe.link(href=event.get('url'))
-
-        if 'created' in event:
-            pub_date = event['created']
+        if longer_than_a_day:
+            when_short = start.strftime('%a %Y-%m-%d') + ' – ' + shown_end.strftime('%a %Y-%m-%d')
+        elif all_day:
+            when_short = start.strftime('%a %Y-%m-%d')
         else:
-            pub_date = datetime.now(tz)
+            when_short = start.strftime('%a %Y-%m-%d %H:%M')
+        if all_day:
+            when = start.strftime('%A, %Y-%m-%d') + (
+                ' – ' + shown_end.strftime('%A, %Y-%m-%d') if longer_than_a_day else ' (all day)')
+        elif longer_than_a_day:
+            when = start.strftime('%A, %Y-%m-%d %H:%M') + ' – ' + end.strftime('%A, %Y-%m-%d %H:%M')
+        else:
+            when = start.strftime('%A, %Y-%m-%d, %H:%M') + '–' + end.strftime('%H:%M')
+            if end.date() != start.date():
+                when += end.strftime(' (%A)')
 
-        if isinstance(pub_date, datetime):
-            pub_date = pub_date.astimezone(tz)
-        elif isinstance(pub_date, date):
-            pub_date = datetime.combine(pub_date, datetime.min.time()).astimezone(tz)
-        fe.pubDate(pub_date)
+        parts = [str(event.get('title') or '').strip() or '(untitled)']
+        if location:
+            parts.append(str(location))
+        parts.append(when_short)
+        item_title = ' · '.join(parts)
+        if event.get('cancelled'):
+            item_title = '(cancelled) ' + item_title
 
-        if 'last_modified' in event:
-            last_modified = event['last_modified']
+        description_html = _strip_control_chars(str(event.get('description') or ''))
+        summary = _truncate_words(_plain_text(description_html))
+        if not summary:
+            summary = when + (', ' + str(location) if location else '')
 
-            if isinstance(last_modified, datetime):
-                last_modified = last_modified.astimezone(tz)
-            elif isinstance(last_modified, date):
-                last_modified = datetime.combine(last_modified, datetime.min.time()).astimezone(tz)
-            fe.updated(last_modified)
+        body = ['<p><strong>When</strong> ' + html.escape(when) + '</p>']
+        if location:
+            body.append('<p><strong>Where</strong> ' + html.escape(str(location)) + '</p>')
+        if event.get('admission'):
+            body.append('<p><strong>Admission</strong> ' + html.escape(str(event['admission'])) + '</p>')
+        links = []
+        if event_url:
+            links.append('<a href="' + html.escape(event_url, quote=True) + '">Event page</a>')
+        links.append('<a href="' + html.escape(site_link, quote=True) + '">' + html.escape(str(title)) + '</a>')
+        body.append('<p>' + ' · '.join(links) + '</p>')
+        if description_html.strip():
+            body.append('<hr>')
+            body.append(_escape_bare_amp(description_html))
 
-        content = ''
-
-        for key, value in event.items():
-            if key not in ['uid', 'title', 'url', 'duration_seconds', 'kw', 'year', 'date', 'weekday_end',
-                           'description', 'created']:
-                content += '\n\n' + str(key) + ': ' + str(value)
-
-        content += '\n\n' + str(event['description'])
-
-        fe.content(content)
-        fe.source(str(url) + '#' + str(event['uid']))
-
-        if event['description'] is not None:
-            fe.description(str(event['description'][:80] + '...'))
+        fe = fg.add_entry(order='append')
+        fe.guid(str(event['uid']) + '-' + day, permalink=False)
+        fe.title(item_title)
+        fe.link(href=event_url or site_link)
+        fe.description(summary, isSummary=True)
+        fe.content('\n'.join(body), type='CDATA')
+        created = event.get('created')
+        fe.pubDate(local(created) if created is not None else start)
 
     return fg.rss_str(pretty=True).decode('utf-8')
 
