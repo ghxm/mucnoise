@@ -90,7 +90,7 @@ class Event(BaseModel):
         all_day = not isinstance(start, datetime)
         recurring = component.get('RRULE') is not None
         if all_day:
-            multi_day = start != end
+            multi_day = (end - start).days > 1
         else:
             multi_day = start.date() != end.date()
         cancelled = component.get('STATUS') == 'CANCELLED'

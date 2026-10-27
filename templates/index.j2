@@ -163,25 +163,23 @@
                                                             <td class="{{ tdclass }} fst-italic font-size-99 fw-medium">
                                                             {%  if event.all_day %}
                                                                 {{ value_display(event.get('weekday_start'))[:3] }}
+                                                                {%  if event.multi_day and event.weekday_end != None %}
+                                                                    &ndash;
+                                                                    {{ value_display(event.get('weekday_end'))[:3] }}
+                                                                {% endif %}
                                                             {%  else %}
                                                                 {%  if event.start_datetime != None %}
                                                                     {{ event.start_datetime.strftime('%H:%M') }}
                                                                 {% endif %}
-                                                                {%  if ongoing and not event.get('all_day', False) %}
+                                                                {%  if ongoing %}
                                                                     ({{ value_display(event.get('weekday_start'))[:3] }})
                                                                 {% endif %}
-                                                            {% endif %}
-                                                            {%  if not event.all_day %}
                                                                 &ndash;
-                                                                {%  if event.all_day %}
-                                                                    {{ value_display(event.get('weekday_end'))[:3] }}
-                                                                {%  else %}
-                                                                    {%  if event.end_datetime != None %}
-                                                                        {{ event.end_datetime.strftime('%H:%M') }}
-                                                                    {% endif %}
-                                                                    {%  if event.multi_day and event.weekday_end != None %}
-                                                                        ({{ value_display(event.get('weekday_end'))[:3] }})
-                                                                    {% endif %}
+                                                                {%  if event.end_datetime != None %}
+                                                                    {{ event.end_datetime.strftime('%H:%M') }}
+                                                                {% endif %}
+                                                                {%  if event.multi_day and event.weekday_end != None %}
+                                                                    ({{ value_display(event.get('weekday_end'))[:3] }})
                                                                 {% endif %}
                                                             {% endif %}
                                                             </td>
