@@ -152,7 +152,7 @@ def _time_patch(carrier):
     start, end = carrier.start, carrier.end
     all_day = not isinstance(start, datetime)
     if all_day:
-        multi_day = start != end
+        multi_day = (end - start).days > 1
     else:
         multi_day = start.date() != end.date()
     return {
