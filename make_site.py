@@ -113,11 +113,11 @@ for schedule_name, schedule_ in schedules.items():
     for event in schedule_:
         if event['duration_seconds'] > 60*60*24:
 
-            # get days
-            if event['all_day']:
-                days = [d for d in utils.daterange(utils.make_datetime(event['start']), utils.make_datetime(event['end']))]
-            else:
-                days = [d for d in utils.daterange(datetime.fromisoformat(event['start']), datetime.fromisoformat(event['end']))]
+            days = utils.event_days(event)
+
+            # the live schedule drops days already past, so the first row shown carries the details
+            if schedule_name == 'schedule':
+                days = [d for d in days if d >= utils.get_today(return_date_obj=True)]
 
             for i, day in enumerate(days):
                 event_copy = event.copy()
@@ -454,17 +454,7 @@ if config.get('subset_pages_enabled'):
     all_events_exploded = []
     for event in raw_events:
         if event['duration_seconds'] > 60 * 60 * 24:
-            if event['all_day']:
-                days = [d for d in utils.daterange(
-                    utils.make_datetime(event['start']),
-                    utils.make_datetime(event['end']),
-                )]
-            else:
-                days = [d for d in utils.daterange(
-                    datetime.fromisoformat(event['start']),
-                    datetime.fromisoformat(event['end']),
-                )]
-            for i, day in enumerate(days):
+            for i, day in enumerate(utils.event_days(event)):
                 ec = event.copy()
                 ec['event_day_num'] = i + 1
                 ec['date'] = utils.ymd_string(day)

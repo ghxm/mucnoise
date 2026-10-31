@@ -170,7 +170,7 @@
                                                                 {%  if event.start_datetime != None %}
                                                                     {{ event.start_datetime.strftime('%H:%M') }}
                                                                 {% endif %}
-                                                                {%  if ongoing %}
+                                                                {%  if long_event and event.date != event.start_datetime.strftime('%Y-%m-%d') %}
                                                                     ({{ value_display(event.get('weekday_start'))[:3] }})
                                                                 {% endif %}
                                                                 &ndash;
