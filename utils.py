@@ -541,6 +541,17 @@ def daterange(start_date, end_date):
         yield start_date + timedelta(n)
 
 
+def event_days(event):
+    """Local calendar dates an event covers (end exclusive, so a timed end at midnight adds no day)."""
+    if event['all_day']:
+        first = make_datetime(event['start']).date()
+        end = make_datetime(event['end']).date()
+    else:
+        first = ensure_tz(datetime.fromisoformat(event['start'])).date()
+        end = (ensure_tz(datetime.fromisoformat(event['end'])) - timedelta(microseconds=1)).date() + timedelta(days=1)
+    return list(daterange(first, end))
+
+
 def make_datetime(in_date, time="00:00", tz=get_config().get('timezone', 'Europe/Berlin')):
     """
     Make datetime object from date and time.
