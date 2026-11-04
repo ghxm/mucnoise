@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var searchButton = document.createElement('button');
     searchButton.type = 'button';
-    searchButton.className = 'btn btn-outline-primary btn-sm';
+    searchButton.className = 'menu-item';
 
     var SearchIcon = document.createElement('i');
     SearchIcon.className = 'fa fa-search';
