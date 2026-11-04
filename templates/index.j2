@@ -36,27 +36,27 @@
 {% set VARS = namespace(last_printed_date=None) %}
 
     <div id="row-top" class="row">
-        <div class='d-flex flex-wrap justify-content-end'>
+        <div class='d-flex flex-wrap justify-content-end px-0'>
         {%  if archive or subset_view %}
-                        <a href="{{ config.get('site_url') }}" class="menu-item me-2"><span class="d-none d-md-inline"><<&nbsp;</span>upcoming</a>
+                        <a href="{{ config.get('site_url') }}" class="menu-item"><span class="d-none d-md-inline"><<&nbsp;</span>upcoming</a>
         {% endif %}
         {% if not archive and not subset_view and path_exists('site/archive.html') %}
-                <a href="/archive" class="menu-item me-2">archive<span class="d-none d-md-inline">&nbsp;>></span></a>
+                <a href="/archive" class="menu-item">archive<span class="d-none d-md-inline">&nbsp;>></span></a>
         {% endif %}
-            <a href="#venues" class="menu-item me-2">venues</a>
+            <a href="#venues" class="menu-item">venues</a>
             {% if news and news|length > 0 %}
-                <a href="#news" class="menu-item me-2">news</a>
+                <a href="#news" class="menu-item">news</a>
             {% endif %}
-            <!---<a href="#info" class="menu-item me-2">info</a>--->
-            <a href="#howto" class="menu-item menu-item-danger me-2">suggest<span class="d-none d-md-inline">&nbsp;an event</span>!</a>
+            <!---<a href="#info" class="menu-item">info</a>--->
+            <a href="#howto" class="menu-item menu-item-danger">suggest<span class="d-none d-md-inline">&nbsp;an event</span>!</a>
             {%  if path_exists('site/events.ics') %}
-                    <a  href="/events.ics" class="menu-item menu-item-secondary me-2 d-none d-md-block">.ics</a>
+                    <a  href="/events.ics" class="menu-item menu-item-secondary d-none d-md-block">.ics</a>
             {% endif %}
             {%  if path_exists('site/events.json') %}
-                    <a href="/events.json" class="menu-item menu-item-secondary me-2 d-none d-md-block">.json</a>
+                    <a href="/events.json" class="menu-item menu-item-secondary d-none d-md-block">.json</a>
             {% endif %}
             {%  if path_exists('site/events.rss') %}
-                    <a href="/events.rss" class="menu-item menu-item-secondary me-2 d-none d-md-block">.rss</a>
+                    <a href="/events.rss" class="menu-item menu-item-secondary d-none d-md-block">.rss</a>
             {% endif %}
 
         </div>
