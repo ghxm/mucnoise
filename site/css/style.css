@@ -282,6 +282,25 @@ td.text span {
     }
 }
 
+/* Floating go-up button: footer button look, solid background, larger tap target on mobile. */
+#to-top {
+    --bs-btn-bg: #fff;
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 1030;
+}
+
+@media (max-width: 767.98px) {
+    #to-top {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        min-height: 44px;
+    }
+}
+
 /* Year/KW labels are wrapped in <a> when subset pages are enabled.
    They must look like the plain headings they replace — no color shift,
    no underline, even on hover or focus. */
