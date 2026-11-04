@@ -244,10 +244,8 @@ td.text span {
     justify-content: center;
     padding: .25rem .5rem;
     border: 0;
-    border-radius: .25rem;
     background-color: transparent;
     color: var(--menu-color);
-    font-size: .875rem;
     font-weight: 700;
     text-decoration: none;
 }
@@ -275,8 +273,7 @@ td.text span {
     }
 
     #row-top .menu-item {
-        padding-top: .45rem;
-        padding-bottom: .45rem;
+        min-height: 44px;
     }
 }
 
