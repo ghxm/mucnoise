@@ -429,13 +429,15 @@
 </div>
 
 <div id="log" class="text-end">
-    <a href="#top" class="btn btn-outline-primary btn-sm mb-3">^</a>
+    <a href="#top" class="btn btn-outline-primary btn-sm rounded-0 mb-3">^</a>
     <p>
     last update: {{ now.strftime('%Y-%m-%d %H:%M') }}
         <br>
     source code: <a href="https://github.com/ghxm/mucnoise" target="_blank" class="text-decoration-none">github.com/ghxm/mucnoise</a>
     </p>
 </div>
+
+<a href="#top" id="to-top" class="btn btn-outline-primary btn-sm rounded-0" aria-label="Go to top of page" hidden>^</a>
 
 {% if config.get('footer_logo_enabled') and footer_svg %}
 <footer class="text-center">
@@ -470,6 +472,17 @@
     };
 document.addEventListener("copy", copyListener);
 
+</script>
+
+<script>
+    // show the floating go-up button after scrolling, unless the footer one is on screen
+    const toTop = document.getElementById('to-top');
+    const footerToTop = document.querySelector('#log a[href="#top"]');
+    const toggleToTop = () => {
+      toTop.hidden = window.scrollY < 200 || footerToTop.getBoundingClientRect().top < window.innerHeight;
+    };
+    window.addEventListener('scroll', toggleToTop, { passive: true });
+    toggleToTop();
 </script>
 
 <script>
