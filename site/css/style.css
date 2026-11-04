@@ -280,6 +280,20 @@ td.text span {
     #row-top .menu-item {
         min-height: 44px;
     }
+
+    /* Items share spare width; the filter button keeps its size at the right edge. */
+    #row-top .menu-item:not(.menu-item-search):not(:only-child) {
+        flex-grow: 1;
+    }
+}
+
+/* Space between the groups: links, suggest, files, filter. */
+@media (min-width: 768px) {
+    .menu-item-danger,
+    .menu-item-danger + .menu-item-secondary,
+    .menu-item-search {
+        margin-left: 1.5rem;
+    }
 }
 
 /* Floating go-up button: footer button look, solid background, larger tap target on mobile. */
