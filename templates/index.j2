@@ -36,7 +36,7 @@
 {% set VARS = namespace(last_printed_date=None) %}
 
     <div id="row-top" class="row">
-        <div class='d-flex justify-content-end'>
+        <div class='d-flex flex-wrap justify-content-end'>
         {%  if archive or subset_view %}
                         <a href="{{ config.get('site_url') }}" class="menu-item me-2"><span class="d-none d-md-inline"><<&nbsp;</span>upcoming</a>
         {% endif %}
