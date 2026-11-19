@@ -4,7 +4,7 @@
     <meta name="description" content="{% if subset_view %}{{ subset_view.desc }}{% else %}{{ config.get('site_description') }}{% endif %}">
     <meta name="keywords" content="{{ config.get('site_keywords') }}">
     <meta name="author" content="{{ config.get('site_author') }}">    <meta name="robots" content="index, follow">
-    <title>{% if subset_view %}{{ subset_view.label }} – {% endif %}{{ config.get('site_title') }}{% if archive %} archive{% endif %}</title>
+    <title>{% if not_found %}page not found – {% endif %}{% if subset_view %}{{ subset_view.label }} – {% endif %}{{ config.get('site_title') }}{% if archive %} archive{% endif %}</title>
 {%- if subset_view %}
     <link rel="canonical" href="{{ subset_view.canonical }}">
     <script type="application/ld+json">

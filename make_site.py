@@ -432,6 +432,40 @@ with open('site/index.html', 'w') as f:
                             )
                             )
 
+# 404 page, served by GitHub Pages for any missing path: the normal index page
+# whose schedule holds a single "event" for today stating the error
+today_date = utils.get_today(return_date_obj=True)
+today = utils.ymd_string(today_date)
+not_found_event = {
+    'uid': '404',
+    'date': today,
+    'title': 'Page not found',
+    'url': None,
+    'all_day': True,
+    'weekday_start': '404',  # all-day rows print weekday_start in the time column
+    'location': 'nowhere',
+    'description': 'This page does not exist. See the <a href="/">upcoming events</a> or the <a href="/archive">archive</a>.',
+}
+not_found_schedule = {utils.get_weeknum_year(today_date): {utils.get_weeknum(today_date): {today: [not_found_event]}}}
+
+with open('site/404.html', 'w') as f:
+    f.write(template.render(config = config,
+                            schedule = not_found_schedule,
+                            news = news_current,
+                            venues = venues,
+                            date_weekdays = {today: utils.get_weekday(today_date)},
+                            today = today,
+                            today_datetime = today_date,
+                            now = datetime.now(pytz.timezone(config.get('timezone'))),
+                            path_exists = lambda x: os.path.exists(x),
+                            truncate = lambda x, n: x[:n] + '...' if len(x) > n else x,
+                            value_display = lambda x: x if x is not None else '',
+                            dict_has_key = utils.dict_has_key,
+                            archive = False,
+                            subset_view = None,
+                            not_found = True,
+                            ))
+
 
 # SUBSET PAGES
 #
